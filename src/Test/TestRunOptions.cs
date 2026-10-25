@@ -1,3 +1,4 @@
+using Winterborn.Tools.EasySemVer.DataObject;
 using Winterborn.Tools.EasySemVer.Settings;
 
 namespace Test;
@@ -230,6 +231,72 @@ public class TestRunOptions
         var options = RunOptions.Parse("--dry-run");
 
         Assert.True(options.IsDryRun);
+        Assert.Equal(new DirectoryInfo(Environment.CurrentDirectory).FullName, options.FolderRoot);
+    }
+
+    // ------------------------------------------------------------------------------------------
+    // CLI-14 - the delta a caller names
+    // ------------------------------------------------------------------------------------------
+
+    /// <summary>Absent means the verdict is calculated, which is every run that came before this.</summary>
+    [Fact]
+    public void NoIncrementFlagMeansTheVerdictIsCalculated()
+    {
+        Assert.Null(RunOptions.Parse().InstructedChange);
+    }
+
+    [Theory]
+    [InlineData("major", VersionType.Major)]
+    [InlineData("minor", VersionType.Minor)]
+    [InlineData("patch", VersionType.Patch)]
+    public void EveryChangeTypeCanBeInstructed(string value, VersionType expected)
+    {
+        Assert.Equal(expected, RunOptions.Parse("--increment", value).InstructedChange);
+    }
+
+    /// <summary>
+    /// Case-insensitively: the flag is typed by a person cutting a release, and "Major" is what
+    /// the log they read the impact off of calls it.
+    /// </summary>
+    [Theory]
+    [InlineData("Major")]
+    [InlineData("MAJOR")]
+    public void TheInstructedChangeTypeIsReadCaseInsensitively(string value)
+    {
+        Assert.Equal(VersionType.Major, RunOptions.Parse("--increment", value).InstructedChange);
+    }
+
+    /// <summary>
+    /// Named, not ignored. A run that quietly calculated its own verdict instead would publish a
+    /// version nobody asked for and say nothing about having done so.
+    /// </summary>
+    [Theory]
+    [InlineData("mayor")]
+    [InlineData("breaking")]
+    [InlineData("major ")]
+    [InlineData("")]
+    public void AnUnrecognisedChangeTypeIsAnError(string value)
+    {
+        var error = Assert.Throws<InvalidOperationException>(
+            () => RunOptions.Parse("--increment", value));
+
+        // What it would have accepted, since the value it got proves the caller did not know.
+        Assert.Contains("major, minor, patch", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TheIncrementFlagWithoutAChangeTypeIsAnError()
+    {
+        Assert.Throws<InvalidOperationException>(() => RunOptions.Parse("--increment"));
+    }
+
+    /// <summary>CLI-02 again - the change type is not mistaken for the folder argument.</summary>
+    [Fact]
+    public void TheInstructedChangeTypeIsNotMistakenForTheFolder()
+    {
+        var options = RunOptions.Parse("--increment", "minor");
+
+        Assert.Equal(VersionType.Minor, options.InstructedChange);
         Assert.Equal(new DirectoryInfo(Environment.CurrentDirectory).FullName, options.FolderRoot);
     }
 

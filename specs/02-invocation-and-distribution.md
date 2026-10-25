@@ -136,6 +136,31 @@ naming a token you never write turns the replacement off as a side effect, leavi
 to keep in step with this one. This repository's own release workflow is that case, and is the
 proof the escape hatch works.
 
+**CLI-14 — `--increment <major|minor|patch>` applies a delta the caller names.** ✅ *(added 2026-10-25)*
+It SHALL consume the following argument as a change type, matched case-insensitively against the
+names of `VersionType`, and SHALL fail if none follows or if the value is not one of them. With it,
+the run SHALL raise the version by what it was told; without it, the verdict is calculated exactly
+as before.
+
+Everything ahead of the bump still happens. Discovery, extraction and classification all run, the
+baseline is still written (PER-06), and `findings` still carries every change that was detected
+(REP-09). The instruction replaces one number: what the version moves by. Skipping classification
+instead would leave the baseline describing the release before this one, so the next calculated run
+would bump a second time for changes this one already published — a caller naming the delta is
+overriding a verdict, not opting out of the tool.
+
+An instruction below the detected impact SHALL be logged as such, and SHALL still be obeyed.
+Refusing it would leave no way to say the thing the flag exists to say; saying nothing would let a
+Major go out as a Patch with no record anywhere of that having happened. The report keeps both
+numbers for the same reason (REP-11).
+
+ℹ️ Why this exists at all, given OVR-01: a signature diff cannot see every kind of break. A
+behavioural change behind an unchanged signature, a dependency of your own that went major, a
+documented contract tightened in prose — every one of them is Major to a consumer and Patch here,
+and that is a property of signature diffing rather than a gap in the rule set. This is the escape
+hatch for them. It is a flag and not a setting because the knowledge is about one release, not
+about the repository.
+
 ## Machine-readable report
 
 **REP-01 — `--json <path>` writes the run's verdict as a file.** ✅
@@ -150,15 +175,18 @@ parse a log, and no existing stream contract changes.
   "formatVersion": 2,
   "dryRun": false,
   "changeType": "major",
+  "detectedChangeType": "major",
   "oldVersion": { "version": "2.3.4", "major": 2, "minor": 3, "patch": 4 },
   "newVersion": { "version": "3.0.0", "major": 3, "minor": 0, "patch": 0 },
   "findings": [ … ]
 }
 ```
 `findings` is specified by REP-09.
-- `changeType` is `"major" | "minor" | "patch"`, lower case. So are all enum-valued fields: this
-  is a wire format, not a dump of a C# enum, and lower case removes a class of casing bugs in
-  shell and YAML comparisons.
+- `changeType` is `"major" | "minor" | "patch"`, lower case, and is the increment the run
+  applied. So are all enum-valued fields: this is a wire format, not a dump of a C# enum, and
+  lower case removes a class of casing bugs in shell and YAML comparisons.
+- `detectedChangeType` is the classification behind it, and is the same value unless the run was
+  handed its delta (CLI-14). Specified by REP-11.
 - Both version objects share one shape. `version` is the canonical string and the full truth;
   `major`/`minor`/`patch` are numbers and are the *first three* segments, which matters because a
   version may legitimately carry more (VER-07). The decomposition is there because consumers
@@ -193,7 +221,11 @@ reversal — the requirement asked for a demonstrated need, and in each case one
 `changeType` is not redundant with the two versions, and a consumer SHALL NOT derive it by
 comparing them. VER-05's overflow rollover makes that inference wrong: `1.0.2147483647 + Patch`
 becomes `1.1.0`, which reads as a Minor bump, and `1.2147483647.123 + Minor` becomes `2.0.0`,
-which reads as Major. The field is the only place the classification itself appears.
+which reads as Major. CLI-14 makes it wrong a second way, in the other direction: an instructed
+delta is stated in this field and is nowhere in the version pair at all.
+ℹ️ The field is the increment the run applied. The classification behind it lives in
+`detectedChangeType` (REP-11), which is the same value on every run that was not handed a delta —
+and until CLI-14 existed, this field was the only place either of them appeared.
 
 **REP-07 — Determinism, and no machine-specific content.** ✅
 The document SHALL contain no absolute paths, timestamps, durations, machine names or tool
@@ -274,6 +306,30 @@ absolute path that would make them unambiguous. Where the two differ, a workflow
 folder root (`working-directory:`), which is what the copy-paste block in the README does.
 ℹ️ Adding this field does not bump `formatVersion` (REP-04), and it introduces no absolute path,
 timestamp or machine name, so REP-07 is unaffected.
+
+**REP-11 — `detectedChangeType`: the classification, once `changeType` is no longer only that.** ✅ *(added 2026-10-25; REP-05's condition met)*
+The document SHALL carry `detectedChangeType`, the change type classification reached, beside
+`changeType`, the increment the run applied. The two SHALL be equal on every run that was not
+handed a delta (CLI-14), and the field SHALL always be present: absent-when-equal would make
+"nothing overrode the verdict" and "an older writer" the same observation, which is what REP-09 and
+REP-10 are present-and-empty for.
+
+```json
+"changeType": "patch",
+"detectedChangeType": "major"
+```
+
+Adding a field does not bump `formatVersion` (REP-04), and this one introduces no absolute path,
+timestamp or machine name, so REP-07 is unaffected.
+
+ℹ️ REP-05's condition, met a third time, and by a change rather than by a new consumer.
+`changeType` had to become the applied delta: consumers read it to act on the bump — the Docker tag
+set, the release note, the Action's own `change-type` output — and a field describing a verdict the
+run did not apply would make every one of them wrong on an instructed run. That left the
+classification with nowhere to live. `findings` carries the evidence but not the verdict it adds up
+to, and CLS-04's floor can raise the verdict with no finding to name at all, so it cannot be
+recovered from the array either. This field is where it lives, and it is what makes an instructed
+release auditable rather than merely obedient.
 
 ## Invocation surfaces
 

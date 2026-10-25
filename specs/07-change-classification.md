@@ -58,6 +58,9 @@ evaluated; evaluation order must not affect the outcome. Because there is one ve
 (OVR-02/ML-06), a Swift-only change moves the C# projects' versions too, and vice versa.
 Classification produces findings and nothing else: rendering them is a formatter's job, so a
 second output format is a second formatter over the same findings and never a second traversal.
+What the verdict is *used for* can be overridden — `--increment` (CLI-14) replaces its effect on
+the version — but nothing on this page changes when it is: the rules still run, the findings are
+still the real ones, and the verdict they add up to is still reported (REP-11).
 
 **CLS-04 — Defensive null handling.** ✅
 If either side is `null`, the result SHALL be **Minor** (fail-safe: assume additive). In practice

@@ -178,7 +178,8 @@ public class ActionRegression : IDisposable
         string maxMinor = "",
         string maxPatch = "",
         string doNotExclude = "",
-        string vnextTokenName = "") => new()
+        string vnextTokenName = "",
+        string increment = "") => new()
     {
         ["RUNNER_OS"] = ThisRunner.Os,
         ["RUNNER_TEMP"] = this.RunnerTemp,
@@ -196,6 +197,7 @@ public class ActionRegression : IDisposable
         ["EASYSEMVER_MAX_PATCH"] = maxPatch,
         ["EASYSEMVER_DO_NOT_EXCLUDE"] = doNotExclude,
         ["EASYSEMVER_VNEXT_TOKEN_NAME"] = vnextTokenName,
+        ["EASYSEMVER_INCREMENT"] = increment,
 
         // What appending to $GITHUB_PATH does for every later step.
         ["PATH"] = Path.Combine(this.RunnerTemp, "easysemver") + ":" +
@@ -323,7 +325,8 @@ public class ActionRegression : IDisposable
         string maxMinor = "",
         string maxPatch = "",
         string doNotExclude = "",
-        string vnextTokenName = "")
+        string vnextTokenName = "",
+        string increment = "")
     {
         this.StubTheRelease(RidFor(ThisRunner.Os, ThisRunner.Arch)!);
 
@@ -332,7 +335,14 @@ public class ActionRegression : IDisposable
 
         return this.RunScript(
             Script(1),
-            this.RunEnvironment(folder, dryRun, maxMinor, maxPatch, doNotExclude, vnextTokenName));
+            this.RunEnvironment(
+                folder,
+                dryRun,
+                maxMinor,
+                maxPatch,
+                doNotExclude,
+                vnextTokenName,
+                increment));
     }
 
     // ----------------------------------------------------------------------------------------
@@ -912,6 +922,38 @@ public class ActionRegression : IDisposable
 
         Assert.Equal(1, result.ExitCode);
         Assert.Contains("--vnext-token-name", result.Output);
+        Assert.Empty(this.PublishedOutputs());
+    }
+
+    /// <summary>
+    /// CLI-14 through the Action: the delta reaches the tool, so a workflow releasing a break a
+    /// signature diff cannot see does not have to drop to the CLI to say so. The published
+    /// change-type is the one that was applied, which is what a caller gating on it needs.
+    /// </summary>
+    [Fact]
+    public void TheInstructedDeltaReachesTheTool()
+    {
+        var result = this.InstallAndRun(this.CreateFolder(), "false", increment: "major");
+
+        Assert.Equal(0, result.ExitCode);
+
+        var outputs = this.PublishedOutputs();
+        Assert.Equal("major", outputs["change-type"]);
+        Assert.Equal("3.0.0", outputs["version"]);
+    }
+
+    /// <summary>
+    /// ACT-04's rule once more. The Action does not re-implement the change type check: the value
+    /// reaches the tool quoted, and the tool names what it accepts rather than quietly calculating
+    /// a verdict the workflow did not ask for.
+    /// </summary>
+    [Fact]
+    public void AnUnrecognisedIncrementIsRejected()
+    {
+        var result = this.InstallAndRun(this.CreateFolder(), "false", increment: "breaking");
+
+        Assert.Equal(1, result.ExitCode);
+        Assert.Contains("--increment", result.Output);
         Assert.Empty(this.PublishedOutputs());
     }
 

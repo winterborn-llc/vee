@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Winterborn.Tools.EasySemVer.DataObject;
 using Winterborn.Tools.EasySemVer.Evaluation;
 using Version = Winterborn.Tools.EasySemVer.DataObject.Version;
 
@@ -27,15 +28,21 @@ internal static class JsonChangeReport
         Version oldVersion,
         Version newVersion,
         bool isDryRun,
-        IReadOnlyList<string>? writtenFiles = null)
+        IReadOnlyList<string>? writtenFiles = null,
+        VersionType? instructedChange = null)
     {
         return new JsonReportDocument
         {
             IsDryRun = isDryRun,
 
-            // Lower case throughout: this is a wire format, not a dump of a C# enum, and it
-            // removes a class of casing bugs in shell and YAML comparisons.
-            ChangeType = report.ChangeType.ToString().ToLowerInvariant(),
+            // CLI-14: the verdict the version moved by, which is the instruction when the caller
+            // named one. A consumer reading this field acts on the bump, so it has to describe the
+            // bump that happened rather than the one this run would have chosen unprompted.
+            ChangeType = Name(instructedChange ?? report.ChangeType),
+
+            // REP-11 - and what the API surface itself said, which is the only place that survives
+            // an instruction.
+            DetectedChangeType = Name(report.ChangeType),
             OldVersion = JsonReportVersion.From(oldVersion),
             NewVersion = JsonReportVersion.From(newVersion),
 
@@ -51,6 +58,15 @@ internal static class JsonChangeReport
                 .. (writtenFiles ?? []).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)
             ]
         };
+    }
+
+    /// <summary>
+    /// Lower case throughout: this is a wire format, not a dump of a C# enum, and it removes a
+    /// class of casing bugs in shell and YAML comparisons.
+    /// </summary>
+    private static string Name(VersionType type)
+    {
+        return type.ToString().ToLowerInvariant();
     }
 
     internal static string Render(JsonReportDocument document)
