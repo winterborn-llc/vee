@@ -1,3 +1,5 @@
+using Winterborn.Tools.EasySemVer.DataObject;
+
 namespace Winterborn.Tools.EasySemVer.Settings;
 
 /// <summary>The parsed command line (§4).</summary>
@@ -21,6 +23,8 @@ internal class RunOptions
     private const string VnextTokenNameFlag = "--vnext-token-name";
 
     private const string TagFlag = "--tag";
+
+    private const string IncrementFlag = "--increment";
 
     /// <summary>FLD-01 - the folder handed to the CLI is the root, full stop.</summary>
     internal string FolderRoot { get; private init; } = string.Empty;
@@ -96,6 +100,19 @@ internal class RunOptions
     /// </summary>
     internal bool WritesGitTag { get; private init; }
 
+    /// <summary>
+    /// CLI-14 - the change type this run applies, in place of the one classification reached, or
+    /// null - the default - to apply whatever the run worked out for itself.
+    /// <para>
+    /// It replaces the verdict's effect on the version and nothing else. Classification still
+    /// runs: it is what the baseline and the findings are made of, and skipping it would leave the
+    /// next run diffing against stale signatures and bumping a second time for changes this run
+    /// has already published. Both numbers therefore survive into the report (REP-11), because a
+    /// release that went out as a Patch over a Major is worth being able to find afterwards.
+    /// </para>
+    /// </summary>
+    internal VersionType? InstructedChange { get; private init; }
+
     internal static RunOptions Parse(params string[] args)
     {
         return Parse(Environment.GetEnvironmentVariable, args);
@@ -115,6 +132,7 @@ internal class RunOptions
         var doNotExclude = new List<string>();
         var versionTokenName = MagicValues.DefaultVersionTokenName;
         var writesGitTag = false;
+        VersionType? instructedChange = null;
 
         // The flag whose value the next argument is, or null when the next argument is a flag or
         // the directory. One field rather than one bool per option, now that three flags take one.
@@ -145,6 +163,10 @@ internal class RunOptions
                 else if (string.Equals(flagAwaitingValue, VnextTokenNameFlag, StringComparison.Ordinal))
                 {
                     versionTokenName = ParseTokenName(arg);
+                }
+                else if (string.Equals(flagAwaitingValue, IncrementFlag, StringComparison.Ordinal))
+                {
+                    instructedChange = ParseChangeType(arg);
                 }
                 else
                 {
@@ -197,6 +219,12 @@ internal class RunOptions
                 continue;
             }
 
+            if (string.Equals(arg, IncrementFlag, StringComparison.OrdinalIgnoreCase))
+            {
+                flagAwaitingValue = IncrementFlag;
+                continue;
+            }
+
             if (string.Equals(arg, GitHubFlag, StringComparison.OrdinalIgnoreCase))
             {
                 writesGitHubActionsReport = true;
@@ -232,6 +260,11 @@ internal class RunOptions
             throw new InvalidOperationException($"{VnextTokenNameFlag} requires a token name");
         }
 
+        if (string.Equals(flagAwaitingValue, IncrementFlag, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException($"{IncrementFlag} requires a change type");
+        }
+
         if (flagAwaitingValue != null)
         {
             throw new InvalidOperationException($"{flagAwaitingValue} requires a whole number");
@@ -261,8 +294,35 @@ internal class RunOptions
             MaximumMinor = maximumMinor,
             MaximumPatch = maximumPatch,
             DoNotExclude = doNotExclude,
-            VersionTokenName = versionTokenName
+            VersionTokenName = versionTokenName,
+            InstructedChange = instructedChange
         };
+    }
+
+    /// <summary>
+    /// The change type by name, case-insensitively, matched against the version model's own enum
+    /// so that what the flag accepts cannot drift from what a version can be incremented by.
+    /// <para>
+    /// An unrecognised value is named rather than ignored, on CLI-11's reasoning: a run told
+    /// <c>--increment mayor</c> that quietly calculated its own verdict instead would publish a
+    /// version nobody asked for and say nothing about having done so.
+    /// </para>
+    /// </summary>
+    private static VersionType ParseChangeType(string text)
+    {
+        foreach (var candidate in Enum.GetValues<VersionType>())
+        {
+            if (string.Equals(text, candidate.ToString(), StringComparison.OrdinalIgnoreCase))
+            {
+                return candidate;
+            }
+        }
+
+        var accepted = string.Join(
+            ", ",
+            Enum.GetNames<VersionType>().Select(name => name.ToLowerInvariant()));
+        throw new InvalidOperationException(
+            $"{IncrementFlag} takes one of {accepted}, and got '{text}'");
     }
 
     /// <summary>

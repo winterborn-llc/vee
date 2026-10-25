@@ -37,19 +37,37 @@ public class JsonReportDocument
     public bool IsDryRun { get; init; }
 
     /// <summary>
-    /// "major" | "minor" | "patch". REP-06: stated, never inferred - VER-05's overflow rollover
-    /// makes deriving it from the two versions wrong in both directions.
+    /// "major" | "minor" | "patch" - the increment this run applied. REP-06: stated, never
+    /// inferred, because VER-05's overflow rollover makes deriving it from the two versions wrong
+    /// in both directions. CLI-14 gives it a second reason: a caller can name the delta, and then
+    /// this is what they named rather than anything the two versions could reveal.
     /// </summary>
     [JsonPropertyName("changeType")]
     [JsonPropertyOrder(2)]
     public string ChangeType { get; init; } = string.Empty;
 
-    [JsonPropertyName("oldVersion")]
+    /// <summary>
+    /// REP-11 - what the API surface said, as against what the version moved by. The two differ
+    /// only on a run that was handed its delta (CLI-14), and this is the one field that keeps the
+    /// classification when it was: <see cref="ChangeType"/> has gone over to the instruction, and
+    /// <see cref="Findings"/> carries the evidence but not the verdict it adds up to.
+    /// <para>
+    /// Always present, equal to <see cref="ChangeType"/> on an ordinary run. Absent-when-equal
+    /// would make "nothing overrode the verdict" and "an older writer" the same observation, which
+    /// is the reasoning <see cref="Findings"/> and <see cref="WrittenFiles"/> are present-and-empty
+    /// for.
+    /// </para>
+    /// </summary>
+    [JsonPropertyName("detectedChangeType")]
     [JsonPropertyOrder(3)]
+    public string DetectedChangeType { get; init; } = string.Empty;
+
+    [JsonPropertyName("oldVersion")]
+    [JsonPropertyOrder(4)]
     public JsonReportVersion OldVersion { get; init; } = new();
 
     [JsonPropertyName("newVersion")]
-    [JsonPropertyOrder(4)]
+    [JsonPropertyOrder(5)]
     public JsonReportVersion NewVersion { get; init; } = new();
 
     /// <summary>
@@ -58,7 +76,7 @@ public class JsonReportDocument
     /// would make "no changes" and "an older writer" indistinguishable.
     /// </summary>
     [JsonPropertyName("findings")]
-    [JsonPropertyOrder(5)]
+    [JsonPropertyOrder(6)]
     public IReadOnlyList<JsonReportFinding> Findings { get; init; } = [];
 
     /// <summary>
@@ -73,6 +91,6 @@ public class JsonReportDocument
     /// </para>
     /// </summary>
     [JsonPropertyName("writtenFiles")]
-    [JsonPropertyOrder(6)]
+    [JsonPropertyOrder(7)]
     public IReadOnlyList<string> WrittenFiles { get; init; } = [];
 }

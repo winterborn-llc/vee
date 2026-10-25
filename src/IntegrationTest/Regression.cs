@@ -284,6 +284,89 @@ public class Regression
     }
 
     /// <summary>
+    /// CLI-14 through a whole run: the version moves by the delta the caller named, and not by the
+    /// Minor a first run would otherwise have classified. The verdict it replaced is logged beside
+    /// it, because a release that did not happen for the reason the tool would have given is worth
+    /// being able to read off the build log.
+    /// </summary>
+    [Fact]
+    public void AnInstructedDeltaIsWhatTheVersionMovesBy()
+    {
+        var folderRoot = CreateWidgetTree(out var projectPath, out _);
+        try
+        {
+            var report = CaptureOutput(
+                () => Assert.Equal(0, Program.Main(folderRoot, "--increment", "major")));
+
+            // Left to itself, this is the 1.3.0 every other first run here produces (NCL-02).
+            Assert.Equal("2.0.0", new CsProjFile(projectPath).Version.ToString());
+
+            Assert.Contains("Change Type: Minor", report);
+            Assert.Contains(
+                "Instructed Major, in place of the Minor change this run detected",
+                report);
+            Assert.Contains("Version: 1.2.3 -> 2.0.0", report);
+        }
+        finally
+        {
+            Directory.Delete(folderRoot, recursive: true);
+        }
+    }
+
+    /// <summary>
+    /// CLI-14 - naming the delta overrides one number and opts out of nothing. The baseline is
+    /// still written, which the run after it proves by reaching Patch over unchanged source: had
+    /// the instructed run skipped it, the unit would read as brand new a second time and the next
+    /// run would take the Minor this one already published.
+    /// </summary>
+    [Fact]
+    public void AnInstructedRunStillWritesTheBaseline()
+    {
+        var folderRoot = CreateWidgetTree(out var projectPath, out _);
+        try
+        {
+            Assert.Equal(0, Program.Main(folderRoot, "--increment", "major"));
+            Assert.Equal("2.0.0", new CsProjFile(projectPath).Version.ToString());
+
+            Assert.Equal(0, Program.Main(folderRoot));
+            Assert.Equal("2.0.1", new CsProjFile(projectPath).Version.ToString());
+        }
+        finally
+        {
+            Directory.Delete(folderRoot, recursive: true);
+        }
+    }
+
+    /// <summary>
+    /// CLI-14 - an instruction smaller than the evidence is said out loud and then obeyed. This is
+    /// how a Major goes out as a Patch, and the caller who typed it is the only one who can know
+    /// whether that was the intention.
+    /// </summary>
+    [Fact]
+    public void AnInstructionSmallerThanTheEvidenceSaysSo()
+    {
+        var folderRoot = CreateWidgetTree(out var projectPath, out var sourcePath);
+        try
+        {
+            Assert.Equal(0, Program.Main(folderRoot));
+            File.WriteAllText(sourcePath, "namespace Widgets;\n\npublic class Widget { }");
+
+            var report = CaptureOutput(
+                () => Assert.Equal(0, Program.Main(folderRoot, "--increment", "patch")));
+
+            Assert.Contains("Change Type: Major", report);
+            Assert.Contains(
+                "Instructed Patch, which is less than the Major change this run detected",
+                report);
+            Assert.Equal("1.3.1", new CsProjFile(projectPath).Version.ToString());
+        }
+        finally
+        {
+            Directory.Delete(folderRoot, recursive: true);
+        }
+    }
+
+    /// <summary>
     /// LOG-01 - everything the tool says goes through <c>Log</c> to stdout, so a test can read the
     /// report the same way a build log does.
     /// </summary>

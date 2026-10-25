@@ -30,10 +30,16 @@ public class TestJsonChangeReport
         string oldVersion = "2.3.4",
         string newVersion = "3.0.0",
         bool isDryRun = false,
-        IReadOnlyList<string>? writtenFiles = null)
+        IReadOnlyList<string>? writtenFiles = null,
+        VersionType? instructedChange = null)
     {
         var json = JsonChangeReport.Render(JsonChangeReport.Build(
-            report, new Version(oldVersion), new Version(newVersion), isDryRun, writtenFiles));
+            report,
+            new Version(oldVersion),
+            new Version(newVersion),
+            isDryRun,
+            writtenFiles,
+            instructedChange));
         return JsonDocument.Parse(json).RootElement.Clone();
     }
 
@@ -43,7 +49,10 @@ public class TestJsonChangeReport
         var root = Render(Report(VersionType.Major));
 
         Assert.Equal(
-            ["formatVersion", "dryRun", "changeType", "oldVersion", "newVersion", "findings", "writtenFiles"],
+            [
+                "formatVersion", "dryRun", "changeType", "detectedChangeType", "oldVersion",
+                "newVersion", "findings", "writtenFiles"
+            ],
             root.EnumerateObject().Select(p => p.Name));
     }
 
@@ -80,6 +89,63 @@ public class TestJsonChangeReport
     public void NoFindingsMeansPatch()
     {
         Assert.Equal("patch", Render(Report()).GetProperty("changeType").GetString());
+    }
+
+    // ------------------------------------------------------------------------------------------
+    // REP-11 - the classification, once changeType is the applied delta (CLI-14)
+    // ------------------------------------------------------------------------------------------
+
+    /// <summary>
+    /// An ordinary run is handed no delta, and the two fields are then the same value. Always
+    /// present: equal-and-absent would make "nothing overrode the verdict" and "an older writer"
+    /// indistinguishable.
+    /// </summary>
+    [Fact]
+    public void WithNoInstructionBothChangeTypesAreTheClassification()
+    {
+        var root = Render(Report(VersionType.Minor));
+
+        Assert.Equal("minor", root.GetProperty("changeType").GetString());
+        Assert.Equal("minor", root.GetProperty("detectedChangeType").GetString());
+    }
+
+    /// <summary>
+    /// The instruction is in changeType because that is the field a consumer acts on, and the
+    /// classification survives beside it. A Major released as a Patch is the case this makes
+    /// auditable: the findings carry the evidence, and this carries the verdict it added up to.
+    /// </summary>
+    [Fact]
+    public void AnInstructedDeltaIsTheChangeTypeAndTheClassificationIsKept()
+    {
+        var root = Render(Report(VersionType.Major), instructedChange: VersionType.Patch);
+
+        Assert.Equal("patch", root.GetProperty("changeType").GetString());
+        Assert.Equal("major", root.GetProperty("detectedChangeType").GetString());
+    }
+
+    /// <summary>Both fields are lower case, for REP-02's reason and by the same code path.</summary>
+    [Theory]
+    [InlineData(VersionType.Major, "major")]
+    [InlineData(VersionType.Minor, "minor")]
+    [InlineData(VersionType.Patch, "patch")]
+    public void AnInstructedChangeTypeIsLowerCase(VersionType instructed, string expected)
+    {
+        Assert.Equal(
+            expected,
+            Render(Report(), instructedChange: instructed).GetProperty("changeType").GetString());
+    }
+
+    /// <summary>
+    /// An instruction that matches what was detected still reports both, so a consumer never has
+    /// to special-case the agreeing run.
+    /// </summary>
+    [Fact]
+    public void AnInstructionMatchingTheClassificationReportsBoth()
+    {
+        var root = Render(Report(VersionType.Minor), instructedChange: VersionType.Minor);
+
+        Assert.Equal("minor", root.GetProperty("changeType").GetString());
+        Assert.Equal("minor", root.GetProperty("detectedChangeType").GetString());
     }
 
     [Fact]

@@ -53,11 +53,39 @@ public class JsonReportRegression : IDisposable
 
         // A first run has no baseline, so every unit is new: Minor (NCL-02).
         Assert.Equal("minor", report.GetProperty("changeType").GetString());
+
+        // REP-11 - nothing overrode the verdict, so the two agree.
+        Assert.Equal("minor", report.GetProperty("detectedChangeType").GetString());
         Assert.Equal("2.3.4", report.GetProperty("oldVersion").GetProperty("version").GetString());
         Assert.Equal("2.4.0", report.GetProperty("newVersion").GetProperty("version").GetString());
 
         // And the version it reports is the one that actually reached the disk.
         Assert.Contains("2.4.0", File.ReadAllText(Path.Combine(this._folderRoot, "App.csproj")));
+    }
+
+    /// <summary>
+    /// REP-11 through a whole run - the delta the run applied and the classification it replaced
+    /// both reach the document (CLI-14), which is what makes a release that went out as a Patch
+    /// over a Major auditable by something other than the build log.
+    /// </summary>
+    [Fact]
+    public void AnInstructedRunReportsWhatItAppliedAndWhatItDetected()
+    {
+        Assert.Equal(0, Program.Main(this._folderRoot));
+        this.WriteSource("public class Thing { }");
+
+        Assert.Equal(
+            0,
+            Program.Main(this._folderRoot, "--increment", "patch", "--json", this.ReportPath));
+
+        var report = this.ReadReport();
+        Assert.Equal("patch", report.GetProperty("changeType").GetString());
+        Assert.Equal("major", report.GetProperty("detectedChangeType").GetString());
+        Assert.Equal("2.4.0", report.GetProperty("oldVersion").GetProperty("version").GetString());
+        Assert.Equal("2.4.1", report.GetProperty("newVersion").GetProperty("version").GetString());
+
+        // And the version it reports is the one that actually reached the disk.
+        Assert.Contains("2.4.1", File.ReadAllText(Path.Combine(this._folderRoot, "App.csproj")));
     }
 
     [Fact]

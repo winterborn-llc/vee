@@ -178,6 +178,7 @@ Split it the moment something is built between the two, for the ordering reasons
 | `max-patch` | — | Cap the patch segment, carrying into minor. Set both to `255` if you ship a framework or dylib target |
 | `do-not-exclude` | — | Directory names discovery should keep, one per line. See [Excluded directories](#excluded-directories) |
 | `vnext-token-name` | `vnext` | The token stamped with the new version is `{{`this`}}`. See [Putting the version in your own text](#putting-the-version-in-your-own-text) |
+| `increment` | — | Raise the version by `major`, `minor` or `patch` instead of by the verdict. See [Telling it the delta yourself](#telling-it-the-delta-yourself) |
 | `report` | — | Act on an earlier step's `report` output instead of versioning again |
 | `version` | the release this manifest shipped with | Which EasySemVer release to run |
 | `token` | `${{ github.token }}` | Only needs overriding if this repository is private to you |
@@ -311,6 +312,7 @@ everything else is a flag:
 | `--max-patch <n>` | Carry patch into minor once it passes `n`. No ceiling by default |
 | `--do-not-exclude <name>` | Keep a directory discovery would skip. Repeatable; a bare name, not a path |
 | `--vnext-token-name <name>` | Stamp `{{`name`}}` with the new version instead of `{{vnext}}`. The name, not the braces |
+| `--increment <type>` | Raise the version by `major`, `minor` or `patch` instead of by the verdict. See [Telling it the delta yourself](#telling-it-the-delta-yourself) |
 
 `0` on success. `1` on any failure, with the exception printed — deliberate, so that a versioning
 failure on a release build is impossible to miss.
@@ -322,6 +324,7 @@ failure on a release build is impossible to miss.
   "formatVersion": 2,
   "dryRun": false,
   "changeType": "major",
+  "detectedChangeType": "major",
   "oldVersion": { "version": "2.3.4", "major": 2, "minor": 3, "patch": 4 },
   "newVersion": { "version": "3.0.0", "major": 3, "minor": 0, "patch": 0 },
   "findings": [
@@ -347,6 +350,10 @@ by a script and not just read: that pair is the key in the rule tables in
 language rather than globally. Match on `language` and `rule`, never on `description` — the prose
 is for people. Take the verdict from `changeType` rather than from the array: a run with no
 comparable baseline reports no findings and still classifies above Patch.
+
+`changeType` is what the version moved by and `detectedChangeType` is what the API surface said.
+They are the same value unless the run was told its delta — see
+[Telling it the delta yourself](#telling-it-the-delta-yourself).
 
 ## Wiring it into a build
 
@@ -410,6 +417,35 @@ C# enum is Minor, because C# has no such requirement.
 Every rule reads declarations, never behaviour. A method that keeps its signature and changes what
 it does is a Patch, and so is a change to anything your code builds at runtime rather than
 declares — the disclaimer at the top of this file is the long version.
+
+## Telling it the delta yourself
+
+A signature diff cannot see everything that breaks a caller. A method that keeps its signature and
+changes what it does, a dependency of your own that went major, a documented contract tightened in
+prose: all of those are Major to the people using your library, and all of them are Patch here.
+When you know something the diff cannot, say so.
+
+```bash
+easysemver . --increment major
+```
+
+The run still does everything else it would have done — it discovers your units, reads their public
+API, classifies every change it can see, and writes the baseline, so the next run diffs against
+this release rather than against the last one it was left to work out for itself. What
+`--increment` replaces is the one number the version moves by. It takes `major`, `minor` or
+`patch`, and an unrecognised value fails the run rather than being ignored.
+
+Ask for less than the run found and it says so, and then does as it was told:
+
+```
+Change Type: Major (1 major, 0 minor, 2 patch)
+Instructed Patch, which is less than the Major change this run detected
+Version: 2.3.4 -> 2.3.5
+```
+
+The JSON report keeps both numbers — `changeType` is what the version moved by, and
+`detectedChangeType` is what the API surface said — so a release that went out as a Patch over a
+Major is something you can still find afterwards.
 
 ## Seeding versions
 

@@ -81,6 +81,17 @@ inputs:
     required: false
     default: ''
 
+  increment:
+    description: >-
+      The change type to apply instead of the one classification would reach: 'major', 'minor'
+      or 'patch' (CLI-14). Empty by default, meaning the verdict is calculated as usual. Set it
+      when you know of a break a signature diff cannot see - a behavioural change behind an
+      unchanged signature, a dependency of your own that went major, a contract tightened in
+      prose. The run still classifies and still writes the baseline; the only thing this
+      replaces is the number the version moves by, and the report keeps both (REP-11).
+    required: false
+    default: ''
+
   report:
     description: >-
       Act on a report an earlier step produced instead of versioning again. Pass this the `report`
@@ -128,8 +139,10 @@ outputs:
 
   change-type:
     description: >-
-      'major', 'minor' or 'patch'. The classification itself - do not re-derive it by
-      comparing the two versions, which is wrong across an overflow rollover (REP-06).
+      'major', 'minor' or 'patch' - the increment the run applied. Do not re-derive it by
+      comparing the two versions, which is wrong across an overflow rollover (REP-06) and wrong
+      again when a caller named the delta (CLI-14). What classification itself concluded is
+      detectedChangeType in the JSON report (REP-11), which the `report` output points at.
     value: ${{ steps.run.outputs.change-type }}
 
   dry-run:
@@ -245,6 +258,7 @@ runs:
         EASYSEMVER_MAX_PATCH: ${{ inputs.max-patch }}
         EASYSEMVER_DO_NOT_EXCLUDE: ${{ inputs.do-not-exclude }}
         EASYSEMVER_VNEXT_TOKEN_NAME: ${{ inputs.vnext-token-name }}
+        EASYSEMVER_INCREMENT: ${{ inputs.increment }}
       run: |
         set -euo pipefail
 
@@ -314,6 +328,16 @@ runs:
           token=(--vnext-token-name "$EASYSEMVER_VNEXT_TOKEN_NAME")
         fi
 
+        # CLI-14's named delta. Empty contributes no argument, so the verdict is calculated as
+        # usual and a workflow that has not asked for this is unaffected. Unvalidated here on the
+        # token name's reasoning: the value is expanded quoted out of an array, so nothing a caller
+        # supplies can become more than one argument, and the tool already rejects a change type it
+        # does not recognise by name rather than versioning differently from what was asked.
+        increment=()
+        if [ -n "$EASYSEMVER_INCREMENT" ]; then
+          increment=(--increment "$EASYSEMVER_INCREMENT")
+        fi
+
         # Exit 1 fails this step and stops the action, which is the whole point of CLI-06:
         # a versioning failure on a release build should be impossible to miss. REP-08 and
         # ACT-07 then leave nothing behind - no report, and no outputs - so a later step
@@ -332,7 +356,7 @@ runs:
         # replaces tripped `set -u` on bash 3.2 - still what a macOS runner's /bin/bash is.
         #
         # shellcheck disable=SC2086
-        easysemver "$EASYSEMVER_FOLDER" $dry_run $caps ${keep[@]+"${keep[@]}"} ${token[@]+"${token[@]}"} --github --json "$report"
+        easysemver "$EASYSEMVER_FOLDER" $dry_run $caps ${keep[@]+"${keep[@]}"} ${token[@]+"${token[@]}"} ${increment[@]+"${increment[@]}"} --github --json "$report"
 
     # ------------------------------------------------------------------------------------
     # ACT-11. Commit and tag, if the caller asked for it. Opt-in, and a no-op otherwise -

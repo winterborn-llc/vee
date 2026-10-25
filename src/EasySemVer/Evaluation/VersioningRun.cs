@@ -1,4 +1,5 @@
 using Winterborn.Tools.EasySemVer.DataObject;
+using Winterborn.Tools.EasySemVer.Extensions;
 using Winterborn.Tools.EasySemVer.Interfaces;
 using Winterborn.Tools.EasySemVer.Persistence;
 using Winterborn.Tools.EasySemVer.Providers;
@@ -31,9 +32,14 @@ internal static class VersioningRun
         var report = ChangeClassifier.Classify(baseline, units, providers);
         TextChangeReport.Write(report, options.IsDryRun);
 
+        // CLI-14. Everything above this line has happened either way, so the baseline this run
+        // goes on to write and the findings it publishes are the real ones whether or not the
+        // caller named the delta; what an instruction replaces is only what the version moves by.
+        var changeType = ResolveChangeType(options, report);
+
         var startingVersion = GetSeedVersion(units, providers);
         var newVersion = new Version(startingVersion);
-        newVersion.Increment(report.ChangeType, options.MaximumMinor, options.MaximumPatch);
+        newVersion.Increment(changeType, options.MaximumMinor, options.MaximumPatch);
         Log.WriteLine($"Version: {startingVersion} -> {newVersion}");
 
         if (options.IsDryRun)
@@ -78,6 +84,33 @@ internal static class VersioningRun
     }
 
     /// <summary>
+    /// CLI-14 - what the version actually moves by: the instruction when there is one, and the
+    /// classification otherwise.
+    /// <para>
+    /// An instruction below what the run detected is the case worth a word, because it is how a
+    /// Major goes out as a Patch. It is said and then obeyed rather than refused: overriding the
+    /// verdict is the whole point of the flag, and a caller who has been told what the evidence
+    /// was is the only one who can know whether they meant it. The report keeps both numbers
+    /// (REP-11) so the same question is answerable later by something other than a log.
+    /// </para>
+    /// </summary>
+    private static VersionType ResolveChangeType(RunOptions options, ChangeReport report)
+    {
+        if (options.InstructedChange is not { } instructed)
+        {
+            return report.ChangeType;
+        }
+
+        var understatesTheEvidence = instructed.GetHigherImpact(report.ChangeType) != instructed;
+        Log.WriteLine(
+            understatesTheEvidence
+                ? $"Instructed {instructed}, which is less than the {report.ChangeType} change this run detected"
+                : $"Instructed {instructed}, in place of the {report.ChangeType} change this run detected");
+
+        return instructed;
+    }
+
+    /// <summary>
     /// The two machine-readable surfaces, built from one document so they can never disagree about
     /// the same run (REP-01, CLI-10).
     /// </summary>
@@ -98,7 +131,8 @@ internal static class VersioningRun
             oldVersion,
             newVersion,
             options.IsDryRun,
-            writtenFiles);
+            writtenFiles,
+            options.InstructedChange);
 
         if (options.JsonReportPath.Length > 0)
         {
