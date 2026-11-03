@@ -94,7 +94,7 @@ generic base class, its test class, and an inheritance relationship in fifteen f
 The rule name is half of the published `(language, rule)` key in the JSON report (REP-02) and is
 therefore a contract. It SHALL NOT be derived from the class name by any base or helper, at any
 point, because doing so would make a class rename silently break a consumer — the reason
-[`UnitRemovedRule`](../src/EasySemVer/Evaluators/UnitRemovedRule.cs) already documents for keeping
+[`UnitRemovedRule`](../src/Vee/Evaluators/UnitRemovedRule.cs) already documents for keeping
 it abstract there.
 
 ℹ️ Retained independently of everything else in this document. It is a standing constraint on the
@@ -162,8 +162,8 @@ migrated. A migration that requires a test edit has changed behaviour and SHALL 
 2026-08-17**
 
 All 41 C# and 38 Swift registered rules were read from
-[`CompareSignatures`](../src/EasySemVer/Evaluators/Csharp/CompareSignatures.cs) and
-[`CompareSwiftSignatures`](../src/EasySemVer/Evaluators/Swift/CompareSwiftSignatures.cs). Families:
+[`CompareSignatures`](../src/Vee/Evaluators/Csharp/CompareSignatures.cs) and
+[`CompareSwiftSignatures`](../src/Vee/Evaluators/Swift/CompareSwiftSignatures.cs). Families:
 
 - **A — identity diff.** Walk one side's collection; yield what has no counterpart on the other by
   key. Nothing about the paired entity is examined.
@@ -300,9 +300,9 @@ from prerequisite to primary deliverable, 2026-08-17)*
 
 C# SHALL gain, in `Evaluators/Csharp/`, matching Swift's `(Older, Newer)` value-tuple shape:
 
-- [`Properties.GetPaired`](../src/EasySemVer/Evaluators/Csharp/Properties.cs) — every property
+- [`Properties.GetPaired`](../src/Vee/Evaluators/Csharp/Properties.cs) — every property
   present on both sides of a paired type
-- [`EnumMembers.GetPairedMembers`](../src/EasySemVer/Evaluators/Csharp/EnumMembers.cs) — the same
+- [`EnumMembers.GetPairedMembers`](../src/Vee/Evaluators/Csharp/EnumMembers.cs) — the same
   for enum members
 
 Both yield `(DeclaringType, Older, Newer)`, carrying the **newer** type because that is the name

@@ -1,10 +1,11 @@
 using System.Xml.Linq;
-using Winterborn.Tools.EasySemVer.DataObject.Csharp;
-using Winterborn.Tools.EasySemVer.DataObject;
-using Winterborn.Tools.EasySemVer.Interfaces;
-using Winterborn.Tools.EasySemVer.Persistence;
-using Winterborn.Tools.EasySemVer.Process;
-using Winterborn.Tools.EasySemVer.Providers;
+using Winterborn.Tools.Vee.DataObject.Csharp;
+using Winterborn.Tools.Vee.DataObject;
+using Winterborn.Tools.Vee.Interfaces;
+using Winterborn.Tools.Vee.Persistence;
+using Winterborn.Tools.Vee.Process;
+using Winterborn.Tools.Vee.Providers;
+using Winterborn.Tools.Vee.Settings;
 
 namespace Test.Persistence;
 
@@ -59,6 +60,45 @@ public class TestBaselineFile
         };
 
         return Units.Csharp("Widgets", project);
+    }
+
+    /// <summary>
+    /// The rename from EasySemVer left baselines in the wild under the old file name and the old
+    /// root element. BAS-05 reads a missing baseline as a first run, so without the fallback a
+    /// migrating repository would classify its next release against nothing and re-seed. Both
+    /// halves are exercised here: the file name Read looks for, and the element name it validates.
+    /// </summary>
+    [Fact]
+    public void LegacyBaselineIsReadWhenTheCurrentOneIsAbsent()
+    {
+        var folder = Directory.CreateTempSubdirectory("vee-legacy-baseline").FullName;
+        var document = BaselineFile.BuildDocument([BuildPopulatedUnit()], Providers);
+        document.Root!.Name = MagicValues.LegacyBaselineRootElementName;
+        document.Save(Path.Combine(folder, MagicValues.LegacySignatureFileName));
+
+        var units = BaselineFile.Read(folder, Providers);
+
+        Assert.Single(units);
+        Assert.Equal("Widgets", units[0].UnitId);
+    }
+
+    /// <summary>
+    /// And once the migrating run has written the current baseline, that is the one read - a
+    /// repository that never deleted the old file must not keep classifying against history it
+    /// has already replaced.
+    /// </summary>
+    [Fact]
+    public void CurrentBaselineWinsWhenBothArePresent()
+    {
+        var folder = Directory.CreateTempSubdirectory("vee-both-baselines").FullName;
+
+        var legacy = BaselineFile.BuildDocument([BuildPopulatedUnit()], Providers);
+        legacy.Root!.Name = MagicValues.LegacyBaselineRootElementName;
+        legacy.Save(Path.Combine(folder, MagicValues.LegacySignatureFileName));
+
+        BaselineFile.Write(folder, [], Providers);
+
+        Assert.Empty(BaselineFile.Read(folder, Providers));
     }
 
     [Fact]
@@ -141,7 +181,7 @@ public class TestBaselineFile
     {
         var document = BaselineFile.BuildDocument([], Providers);
 
-        Assert.Equal("EasySemVer", document.Root!.Name.LocalName);
+        Assert.Equal("Vee", document.Root!.Name.LocalName);
         // Hardcoded rather than read from MagicValues: bumping the format is a deliberate act that
         // invalidates every baseline in the wild, so it should have to be made twice.
         Assert.Equal("4", document.Root.Attribute("formatVersion")!.Value);
@@ -159,7 +199,7 @@ public class TestBaselineFile
     {
         var baseline = XDocument.Parse(
             """
-            <EasySemVer formatVersion="4">
+            <Vee formatVersion="4">
                <Unit language="swift" unitId="Pkg:Widgets" unitKind="swiftpm-target" path="Pkg" signatureVersion="1">
                   <SwiftModule name="Widgets" />
                </Unit>
@@ -169,7 +209,7 @@ public class TestBaselineFile
                <Unit language="csharp" unitId="Widgets" unitKind="csproj" path="Widgets.csproj">
                   <CsharpProject name="Widgets" />
                </Unit>
-            </EasySemVer>
+            </Vee>
             """);
 
         var units = BaselineFile.ReadDocument(baseline, Providers);
@@ -181,11 +221,11 @@ public class TestBaselineFile
 
     /// <summary>BAS-03 - an unknown or absent format version is unreadable, never guessed at.</summary>
     [Theory]
-    [InlineData("<EasySemVer formatVersion=\"1\" />")]
+    [InlineData("<Vee formatVersion=\"1\" />")]
     // A version-2 baseline holds the metadata types extraction used to record before SIG-03; a
     // version-3 run never produces them, so diffing the two would read their absence as Major.
-    [InlineData("<EasySemVer formatVersion=\"2\" />")]
-    [InlineData("<EasySemVer />")]
+    [InlineData("<Vee formatVersion=\"2\" />")]
+    [InlineData("<Vee />")]
     [InlineData("<Solution />")]
     public void UnusableBaselineIsRejected(string xml)
     {
@@ -199,10 +239,10 @@ public class TestBaselineFile
     /// </summary>
     [Theory]
     [InlineData("this is not xml at all")]
-    [InlineData("<EasySemVer formatVersion=\"3\" />")]
+    [InlineData("<Vee formatVersion=\"3\" />")]
     public void UnreadableFileOnDiskFailsTheRun(string content)
     {
-        var folderRoot = Directory.CreateTempSubdirectory("easysemver-baseline").FullName;
+        var folderRoot = Directory.CreateTempSubdirectory("vee-baseline").FullName;
         try
         {
             File.WriteAllText(BaselineFile.GetPath(folderRoot), content);
@@ -223,7 +263,7 @@ public class TestBaselineFile
     [Fact]
     public void MissingFileIsAnEmptyBaseline()
     {
-        var folderRoot = Directory.CreateTempSubdirectory("easysemver-baseline").FullName;
+        var folderRoot = Directory.CreateTempSubdirectory("vee-baseline").FullName;
         try
         {
             Assert.Empty(BaselineFile.Read(folderRoot, Providers));
@@ -238,13 +278,13 @@ public class TestBaselineFile
     [Fact]
     public void WriteLeavesOnlyTheBaselineBehind()
     {
-        var folderRoot = Directory.CreateTempSubdirectory("easysemver-baseline").FullName;
+        var folderRoot = Directory.CreateTempSubdirectory("vee-baseline").FullName;
         try
         {
             BaselineFile.Write(folderRoot, [BuildPopulatedUnit()], Providers);
 
             var written = Directory.GetFiles(folderRoot).Select(f => Path.GetFileName(f)!).ToArray();
-            Assert.Equal(["EasySemVer.xml"], written);
+            Assert.Equal(["Vee.xml"], written);
             Assert.DoesNotContain(folderRoot, File.ReadAllText(BaselineFile.GetPath(folderRoot)));
         }
         finally

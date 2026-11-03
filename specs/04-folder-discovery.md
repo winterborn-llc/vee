@@ -1,11 +1,11 @@
 # 04 — Folder Discovery
 
 How the tool locates the folder root, the packageable units inside it, and their source files.
-Sources: [`RunOptions.cs`](../src/EasySemVer/Settings/RunOptions.cs),
-[`FolderScanner.cs`](../src/EasySemVer/Evaluation/FolderScanner.cs),
-[`CsharpLanguageProvider.cs`](../src/EasySemVer/Providers/CsharpLanguageProvider.cs),
-[`SwiftLanguageProvider.cs`](../src/EasySemVer/Providers/SwiftLanguageProvider.cs),
-[`MagicValues.cs`](../src/EasySemVer/Settings/MagicValues.cs).
+Sources: [`RunOptions.cs`](../src/Vee/Settings/RunOptions.cs),
+[`FolderScanner.cs`](../src/Vee/Evaluation/FolderScanner.cs),
+[`CsharpLanguageProvider.cs`](../src/Vee/Providers/CsharpLanguageProvider.cs),
+[`SwiftLanguageProvider.cs`](../src/Vee/Providers/SwiftLanguageProvider.cs),
+[`MagicValues.cs`](../src/Vee/Settings/MagicValues.cs).
 
 > Replaces the former *04 — Solution Discovery*. DSC-01 and DSC-02 are **retired** by FLD-02;
 > DSC-03 and DSC-06 are generalized below.
@@ -33,7 +33,7 @@ run outright (SWE-05) rather than being skipped.
 **DSC-05 — Unit identity.** ✅ *(generalized by ML-03)*
 A unit is identified by `(Language, UnitId)`, where `UnitId` is stable across machines and
 checkouts and contains no absolute path:
-- C#: the `.csproj` filename without extension (e.g. `EasySemVer`),
+- C#: the `.csproj` filename without extension (e.g. `Vee`),
 - SwiftPM: `<package-directory-relative-path>:<target-name>`,
 - Xcode: `<xcodeproj-relative-path>:<target-name>`.
 

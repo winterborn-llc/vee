@@ -1,0 +1,29 @@
+using Winterborn.Tools.Vee.DataObject;
+using Winterborn.Tools.Vee.Interfaces.Csharp;
+
+namespace Winterborn.Tools.Vee.Evaluators.Csharp;
+
+/// <summary>R25 - an enum's underlying type changed, breaking every cast and every layout.</summary>
+public class EnumUnderlyingTypeChanged : IEvaluateCsharpSignatures
+{
+    public string Rule => "EnumUnderlyingTypeChanged";
+
+    public VersionType EvaluationImpact => VersionType.Major;
+
+    public string ChangeDescription => "changed its underlying type";
+
+    public IEnumerable<string> FindDifferences(ICsharpSignaturesToCompare signatures)
+    {
+        foreach (var typePair in EnumMembers.GetPairedEnums(signatures))
+        {
+            var older = (ICsharpEnum)typePair.Older;
+            var newer = (ICsharpEnum)typePair.Newer;
+            if (older.UnderlyingType == newer.UnderlyingType)
+            {
+                continue;
+            }
+
+            yield return newer.Name;
+        }
+    }
+}

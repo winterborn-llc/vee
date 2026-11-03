@@ -1,12 +1,12 @@
 # 05 — Signature Extraction
 
 How each language's current API-surface signature is built. Sources:
-[`CsharpUnitBuilder.cs`](../src/EasySemVer/CodeReader/Csharp/CsharpUnitBuilder.cs),
-[`SymbolGraphReader.cs`](../src/EasySemVer/CodeReader/Swift/SymbolGraphReader.cs), with the data
-models in [`DataObject/Csharp`](../src/EasySemVer/DataObject/Csharp) and
-[`DataObject/Swift`](../src/EasySemVer/DataObject/Swift) and contracts in
-[`Interfaces/Csharp`](../src/EasySemVer/Interfaces/Csharp) and
-[`Interfaces/Swift`](../src/EasySemVer/Interfaces/Swift).
+[`CsharpUnitBuilder.cs`](../src/Vee/CodeReader/Csharp/CsharpUnitBuilder.cs),
+[`SymbolGraphReader.cs`](../src/Vee/CodeReader/Swift/SymbolGraphReader.cs), with the data
+models in [`DataObject/Csharp`](../src/Vee/DataObject/Csharp) and
+[`DataObject/Swift`](../src/Vee/DataObject/Swift) and contracts in
+[`Interfaces/Csharp`](../src/Vee/Interfaces/Csharp) and
+[`Interfaces/Swift`](../src/Vee/Interfaces/Swift).
 
 The two topologies are **not** mapped onto each other (ML-01, D-04). A Swift protocol is modelled
 as a protocol, not as an interface; a C# record is modelled as a record. The only vocabulary they
@@ -33,8 +33,8 @@ CsharpProject                  { Name }
 └── (delegates additionally)   ReturnType, Parameters[]
 ```
 
-Named collections ([`CsharpMethodList`](../src/EasySemVer/DataObject/Csharp/CsharpMethodList.cs),
-[`CsharpPropertyList`](../src/EasySemVer/DataObject/Csharp/CsharpPropertyList.cs)) SHALL support
+Named collections ([`CsharpMethodList`](../src/Vee/DataObject/Csharp/CsharpMethodList.cs),
+[`CsharpPropertyList`](../src/Vee/DataObject/Csharp/CsharpPropertyList.cs)) SHALL support
 lookup by name (`Contains(name)`, indexer, `Keys`). They scan rather than caching a dictionary,
 because a cache built in `Add` would go stale when the serializer populates the list through its
 base class.
@@ -116,7 +116,7 @@ separately (CSX-03) and drive R37.
 
 **SIG-09 — Canonical overload signature string.** ✅
 Where an overload must be compared or looked up as a single value
-([`GetMethodSignature`](../src/EasySemVer/Extensions/ExtendICsharpMethodOverride.cs)), it SHALL be
+([`GetMethodSignature`](../src/Vee/Extensions/ExtendICsharpMethodOverride.cs)), it SHALL be
 rendered as the comma-joined list of `ParameterType ParameterName`, with **required** parameters
 wrapped in square brackets, e.g. `[string input], System.Int32 count`.
 ℹ️ This string *includes* requiredness while the overload-removal matcher (R02) *ignores* it;

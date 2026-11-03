@@ -51,7 +51,7 @@ correcting it is now a deliberate two-line act rather than an accident.
 
 **Answered: Visual Basic gets its own name.** A VB unit now writes `<VisualBasicProject>` (VB-08).
 The model stays C#'s per VB-01 — that was the right call and nothing about it changed — but the name
-in the file a human reads is VB's own. Someone opening `EasySemVer.xml` and finding their Visual
+in the file a human reads is VB's own. Someone opening `Vee.xml` and finding their Visual
 Basic project described as a `<CsharpProject>` would reasonably conclude the tool had misread it.
 
 Done immediately because the window was closing: no repository had a VB baseline yet, so it was free

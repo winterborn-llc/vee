@@ -1,13 +1,13 @@
-using Winterborn.Tools.EasySemVer.Process;
-using Winterborn.Tools.EasySemVer.Evaluation;
-using Winterborn.Tools.EasySemVer.Providers;
+using Winterborn.Tools.Vee.Process;
+using Winterborn.Tools.Vee.Evaluation;
+using Winterborn.Tools.Vee.Providers;
 
 namespace Test;
 
 /// <summary>TST-M3 - fixture folder trees proving FLD-02, FLD-04 and FLD-05.</summary>
 public class TestFolderDiscovery : IDisposable
 {
-    private readonly string _folderRoot = Directory.CreateTempSubdirectory("easysemver-discovery").FullName;
+    private readonly string _folderRoot = Directory.CreateTempSubdirectory("vee-discovery").FullName;
 
     public TestFolderDiscovery()
     {

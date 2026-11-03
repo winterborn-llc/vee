@@ -1,10 +1,10 @@
 # 09 — Version Synchronization (write-back)
 
 How the incremented version is applied across the folder.
-Sources: [`VersioningRun.cs`](../src/EasySemVer/Evaluation/VersioningRun.cs),
-[`CsProjFile.cs`](../src/EasySemVer/CodeReader/Csharp/CsProjFile.cs),
-[`CodeReader/Swift/`](../src/EasySemVer/CodeReader/Swift),
-[`IVersionSource`](../src/EasySemVer/Interfaces/IVersionSource.cs).
+Sources: [`VersioningRun.cs`](../src/Vee/Evaluation/VersioningRun.cs),
+[`CsProjFile.cs`](../src/Vee/CodeReader/Csharp/CsProjFile.cs),
+[`CodeReader/Swift/`](../src/Vee/CodeReader/Swift),
+[`IVersionSource`](../src/Vee/Interfaces/IVersionSource.cs).
 
 **SYN-01 — One version, every location.** ✅ *(generalized by MVR-05; G-01 resolved)*
 After incrementing, the tool SHALL write the same new version into **every** version location in
@@ -14,7 +14,7 @@ baseline save that precedes it works (PER-05).
 
 **SYN-02 — Every occurrence updated.** ✅
 Within a location, **every occurrence** SHALL be set to the new version: all three `.csproj`
-elements ([`MagicValues.VersionPropertyNames`](../src/EasySemVer/Settings/MagicValues.cs)), every
+elements ([`MagicValues.VersionPropertyNames`](../src/Vee/Settings/MagicValues.cs)), every
 `MARKETING_VERSION` assignment in a `project.pbxproj`, and so on. Conditional or duplicated
 declarations therefore converge to one value after the first write.
 
@@ -51,7 +51,7 @@ written. A failed run leaves the working tree byte-identical.
 
 ## The version token
 
-Source: [`VersionTokens.cs`](../src/EasySemVer/Persistence/VersionTokens.cs).
+Source: [`VersionTokens.cs`](../src/Vee/Persistence/VersionTokens.cs).
 
 **TOK-01 — `{{vnext}}` becomes the new version.** ✅ *(added 2026-08-16)*
 After every version location has been written, the run SHALL replace every occurrence of the token
@@ -83,7 +83,7 @@ location. A half-stamped document with no way to tell which half is worse than a
 
 **TOK-04 — The same walk, and the same exclusions.** ✅
 The search SHALL use the discovery walk and FLD-04's exclusion list, so `node_modules`, `bin` and a
-dependency checkout cost nothing here and cannot be stamped. It SHALL NOT rewrite `EasySemVer.xml`:
+dependency checkout cost nothing here and cannot be stamped. It SHALL NOT rewrite `Vee.xml`:
 the baseline is this tool's own file, written moments earlier by the same run (PER-06), and editing
 it here would be a run altering the history the next run reads back.
 

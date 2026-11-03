@@ -1,4 +1,4 @@
-name: EasySemVer
+name: Vee
 description: >-
   Version a folder from what happened to its public API surface, expose the verdict as step
   outputs, and - if you ask it to - commit and tag the bump.
@@ -106,7 +106,7 @@ inputs:
 
   version:
     description: >-
-      The EasySemVer release tag to run. Always an exact release, never 'latest', so that a
+      The Vee release tag to run. Always an exact release, never 'latest', so that a
       workflow pinned to a tag of this action cannot change behaviour under its author. The
       release pipeline rewrites the default below to the release it is cutting, which is what
       lets the moving 'v<major>' tag carry a manifest and a binary from the same release.
@@ -116,7 +116,7 @@ inputs:
   token:
     description: >-
       Token used to download the release archive. The default only suffices while
-      winterborn-llc/easysemver is public; against a private repository a caller must supply
+      winterborn-llc/vee is public; against a private repository a caller must supply
       a token that can read its releases.
     required: false
     default: ${{ github.token }}
@@ -186,14 +186,14 @@ runs:
     # what makes the two-step form cost one download per job rather than two, and - far more
     # importantly - what makes it impossible to bump the version twice in one job.
     # ------------------------------------------------------------------------------------
-    - name: Install EasySemVer
+    - name: Install Vee
       if: inputs.report == ''
       shell: bash
       env:
         # Inputs are passed through the environment, never interpolated into the script.
         # `${{ inputs.x }}` inside a run block is substituted before bash ever sees it, so a
         # caller passing a folder named `; rm -rf /` would be running it, not naming it.
-        EASYSEMVER_VERSION: ${{ inputs.version }}
+        VEE_VERSION: ${{ inputs.version }}
         GH_TOKEN: ${{ inputs.token }}
       run: |
         set -euo pipefail
@@ -207,18 +207,18 @@ runs:
           *)
             # Named rather than guessed: silently falling back to x64 would produce a
             # confusing exec-format error several steps later.
-            echo "::error::EasySemVer publishes no binary for $RUNNER_OS/$RUNNER_ARCH. Supported: linux-x64, linux-arm64, osx-x64, osx-arm64, win-x64." >&2
+            echo "::error::Vee publishes no binary for $RUNNER_OS/$RUNNER_ARCH. Supported: linux-x64, linux-arm64, osx-x64, osx-arm64, win-x64." >&2
             exit 1
             ;;
         esac
 
-        dir="$RUNNER_TEMP/easysemver"
+        dir="$RUNNER_TEMP/vee"
         mkdir -p "$dir"
-        asset="easysemver-$rid.$archive"
+        asset="vee-$rid.$archive"
 
-        echo "Downloading $asset from EasySemVer $EASYSEMVER_VERSION"
-        gh release download "$EASYSEMVER_VERSION" \
-          --repo winterborn-llc/easysemver \
+        echo "Downloading $asset from Vee $VEE_VERSION"
+        gh release download "$VEE_VERSION" \
+          --repo winterborn-llc/vee \
           --pattern "$asset" \
           --dir "$dir" \
           --clobber
@@ -231,14 +231,14 @@ runs:
         fi
 
         # The publish output is named for the assembly, not for the `dotnet tool` command:
-        # `easysemver` only exists where PackAsTool created it. Rename once here so the rest
+        # `vee` only exists where PackAsTool created it. Rename once here so the rest
         # of the action, and anything reading the log, sees the name the tool is known by.
         #
-        # This name must track EasySemVer.csproj's AssemblyName. ActionRegression asserts that
+        # This name must track Vee.csproj's AssemblyName. ActionRegression asserts that
         # it does, because when the two drifted apart the failure landed here - in a download
         # that unpacked fine and then had nothing to run.
-        mv "$dir/Winterborn.Tools.EasySemVer$exe" "$dir/easysemver$exe"
-        chmod +x "$dir/easysemver$exe"
+        mv "$dir/Winterborn.Tools.Vee$exe" "$dir/vee$exe"
+        chmod +x "$dir/vee$exe"
         echo "$dir" >> "$GITHUB_PATH"
 
     # ------------------------------------------------------------------------------------
@@ -247,31 +247,31 @@ runs:
     # block here doing that mapping, and a second copy of it in every workflow that used the
     # CLI directly; both are gone.
     # ------------------------------------------------------------------------------------
-    - name: Run EasySemVer
+    - name: Run Vee
       id: run
       if: inputs.report == ''
       shell: bash
       env:
-        EASYSEMVER_FOLDER: ${{ inputs.folder }}
-        EASYSEMVER_DRY_RUN: ${{ inputs.dry-run }}
-        EASYSEMVER_MAX_MINOR: ${{ inputs.max-minor }}
-        EASYSEMVER_MAX_PATCH: ${{ inputs.max-patch }}
-        EASYSEMVER_DO_NOT_EXCLUDE: ${{ inputs.do-not-exclude }}
-        EASYSEMVER_VNEXT_TOKEN_NAME: ${{ inputs.vnext-token-name }}
-        EASYSEMVER_INCREMENT: ${{ inputs.increment }}
+        VEE_FOLDER: ${{ inputs.folder }}
+        VEE_DRY_RUN: ${{ inputs.dry-run }}
+        VEE_MAX_MINOR: ${{ inputs.max-minor }}
+        VEE_MAX_PATCH: ${{ inputs.max-patch }}
+        VEE_DO_NOT_EXCLUDE: ${{ inputs.do-not-exclude }}
+        VEE_VNEXT_TOKEN_NAME: ${{ inputs.vnext-token-name }}
+        VEE_INCREMENT: ${{ inputs.increment }}
       run: |
         set -euo pipefail
 
-        report="$RUNNER_TEMP/easysemver/report.json"
+        report="$RUNNER_TEMP/vee/report.json"
 
         # An unrecognised value is rejected rather than treated as false: a typo'd
         # `dry-run: yes` that silently stamped versions and rewrote the baseline would be a
         # bad way to find out about the typo.
-        case "$EASYSEMVER_DRY_RUN" in
+        case "$VEE_DRY_RUN" in
           true)  dry_run=--dry-run ;;
           false) dry_run= ;;
           *)
-            echo "::error::dry-run must be 'true' or 'false', got '$EASYSEMVER_DRY_RUN'." >&2
+            echo "::error::dry-run must be 'true' or 'false', got '$VEE_DRY_RUN'." >&2
             exit 1
             ;;
         esac
@@ -283,22 +283,22 @@ runs:
         # months. That check also leaves the value safe to expand unquoted below, because by
         # then it provably holds nothing but digits.
         caps=
-        case "$EASYSEMVER_MAX_MINOR" in
+        case "$VEE_MAX_MINOR" in
           '') ;;
           *[!0-9]*)
-            echo "::error::max-minor must be a whole number of zero or more, got '$EASYSEMVER_MAX_MINOR'." >&2
+            echo "::error::max-minor must be a whole number of zero or more, got '$VEE_MAX_MINOR'." >&2
             exit 1
             ;;
-          *) caps="--max-minor $EASYSEMVER_MAX_MINOR" ;;
+          *) caps="--max-minor $VEE_MAX_MINOR" ;;
         esac
 
-        case "$EASYSEMVER_MAX_PATCH" in
+        case "$VEE_MAX_PATCH" in
           '') ;;
           *[!0-9]*)
-            echo "::error::max-patch must be a whole number of zero or more, got '$EASYSEMVER_MAX_PATCH'." >&2
+            echo "::error::max-patch must be a whole number of zero or more, got '$VEE_MAX_PATCH'." >&2
             exit 1
             ;;
-          *) caps="$caps --max-patch $EASYSEMVER_MAX_PATCH" ;;
+          *) caps="$caps --max-patch $VEE_MAX_PATCH" ;;
         esac
 
         # CLI-12's kept directory names, one per line so that a name containing a space is still
@@ -316,7 +316,7 @@ runs:
               ;;
           esac
           keep+=(--do-not-exclude "$name")
-        done <<< "$EASYSEMVER_DO_NOT_EXCLUDE"
+        done <<< "$VEE_DO_NOT_EXCLUDE"
 
         # CLI-13's token name. Empty contributes no argument, so the tool's own default stays the
         # one place the default token is written down and a workflow that has not asked for this
@@ -324,8 +324,8 @@ runs:
         # expanded quoted out of an array, so nothing a caller supplies can be anything but one
         # argument, and the tool already rejects a name carrying braces or whitespace by name.
         token=()
-        if [ -n "$EASYSEMVER_VNEXT_TOKEN_NAME" ]; then
-          token=(--vnext-token-name "$EASYSEMVER_VNEXT_TOKEN_NAME")
+        if [ -n "$VEE_VNEXT_TOKEN_NAME" ]; then
+          token=(--vnext-token-name "$VEE_VNEXT_TOKEN_NAME")
         fi
 
         # CLI-14's named delta. Empty contributes no argument, so the verdict is calculated as
@@ -334,8 +334,8 @@ runs:
         # supplies can become more than one argument, and the tool already rejects a change type it
         # does not recognise by name rather than versioning differently from what was asked.
         increment=()
-        if [ -n "$EASYSEMVER_INCREMENT" ]; then
-          increment=(--increment "$EASYSEMVER_INCREMENT")
+        if [ -n "$VEE_INCREMENT" ]; then
+          increment=(--increment "$VEE_INCREMENT")
         fi
 
         # Exit 1 fails this step and stops the action, which is the whole point of CLI-06:
@@ -356,7 +356,7 @@ runs:
         # replaces tripped `set -u` on bash 3.2 - still what a macOS runner's /bin/bash is.
         #
         # shellcheck disable=SC2086
-        easysemver "$EASYSEMVER_FOLDER" $dry_run $caps ${keep[@]+"${keep[@]}"} ${token[@]+"${token[@]}"} ${increment[@]+"${increment[@]}"} --github --json "$report"
+        vee "$VEE_FOLDER" $dry_run $caps ${keep[@]+"${keep[@]}"} ${token[@]+"${token[@]}"} ${increment[@]+"${increment[@]}"} --github --json "$report"
 
     # ------------------------------------------------------------------------------------
     # ACT-11. Commit and tag, if the caller asked for it. Opt-in, and a no-op otherwise -
@@ -375,42 +375,42 @@ runs:
     - name: Commit and tag
       shell: bash
       env:
-        EASYSEMVER_COMMIT: ${{ inputs.commit }}
-        EASYSEMVER_TAG: ${{ inputs.tag }}
+        VEE_COMMIT: ${{ inputs.commit }}
+        VEE_TAG: ${{ inputs.tag }}
 
         # Either the caller's report, or the one the run step above just wrote. Everything this
         # step needs comes out of that file rather than from the inputs, so it describes what
         # happened and behaves identically whichever of the two forms produced it.
-        EASYSEMVER_REPORT: ${{ inputs.report }}
-        EASYSEMVER_RUN_REPORT: ${{ steps.run.outputs.report }}
+        VEE_REPORT: ${{ inputs.report }}
+        VEE_RUN_REPORT: ${{ steps.run.outputs.report }}
       run: |
         set -euo pipefail
 
         # ACT-04's rule, applied to these two as well: anything but true/false is rejected.
         # A typo'd `commit: yes` that silently released nothing would be found days later, by
         # someone wondering why the version on nuget.org has no commit behind it.
-        case "$EASYSEMVER_COMMIT" in
+        case "$VEE_COMMIT" in
           true|false) ;;
-          *) echo "::error::commit must be 'true' or 'false', got '$EASYSEMVER_COMMIT'." >&2; exit 1 ;;
+          *) echo "::error::commit must be 'true' or 'false', got '$VEE_COMMIT'." >&2; exit 1 ;;
         esac
 
-        case "$EASYSEMVER_TAG" in
+        case "$VEE_TAG" in
           true|false) ;;
-          *) echo "::error::tag must be 'true' or 'false', got '$EASYSEMVER_TAG'." >&2; exit 1 ;;
+          *) echo "::error::tag must be 'true' or 'false', got '$VEE_TAG'." >&2; exit 1 ;;
         esac
 
-        if [ "$EASYSEMVER_TAG" = "true" ] && [ "$EASYSEMVER_COMMIT" != "true" ]; then
+        if [ "$VEE_TAG" = "true" ] && [ "$VEE_COMMIT" != "true" ]; then
           echo "::error::tag: true requires commit: true - a tag names a commit, and this action will not tag one it did not make." >&2
           exit 1
         fi
 
-        if [ "$EASYSEMVER_COMMIT" != "true" ]; then
+        if [ "$VEE_COMMIT" != "true" ]; then
           exit 0
         fi
 
-        report="${EASYSEMVER_REPORT:-$EASYSEMVER_RUN_REPORT}"
+        report="${VEE_REPORT:-$VEE_RUN_REPORT}"
         if [ ! -f "$report" ]; then
-          echo "::error::No report to commit. Pass report: with the 'report' output of an earlier EasySemVer step, or drop it to version in this step." >&2
+          echo "::error::No report to commit. Pass report: with the 'report' output of an earlier Vee step, or drop it to version in this step." >&2
           exit 1
         fi
 
@@ -435,11 +435,11 @@ runs:
         # stale silently, and `git add -u` would sweep in whatever else the job has touched -
         # test debris, build output - and put it in a release commit.
         jq -r '.writtenFiles[]' "$report" | git add --pathspec-from-file=-
-        git commit -m "EasySemVer: $version"
+        git commit -m "Vee: $version"
 
         # `HEAD:` because actions/checkout leaves a detached HEAD at the triggering commit.
         refs=("HEAD:$GITHUB_REF_NAME")
-        if [ "$EASYSEMVER_TAG" = "true" ]; then
+        if [ "$VEE_TAG" = "true" ]; then
           git tag "v$version"
           refs+=("v$version")
         fi

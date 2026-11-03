@@ -3,7 +3,7 @@
 Test projects: [`src/Test`](../src/Test) (unit, xUnit) and
 [`src/IntegrationTest`](../src/IntegrationTest) (end-to-end, xUnit). Internals are exposed to
 both via `InternalsVisibleTo`
-([`AssemblySettings.cs`](../src/EasySemVer/Settings/AssemblySettings.cs)).
+([`AssemblySettings.cs`](../src/Vee/Settings/AssemblySettings.cs)).
 
 **TST-01 — Every classification rule is tested.** ✅ 81/81 (41 C#, 38 Swift, 2 neutral)
 Each also carries the spec id it implements, asserted by TST-M10.
@@ -61,7 +61,7 @@ second — with no code changes in between — SHALL increment **Patch by exactl
 proof that the baseline can be written at all. The test's own comment notes it legitimately fails
 on the first run after a real Major/Minor change.
 ℹ️ Side effect to be aware of: this test **mutates the working tree** (bumps csproj versions,
-rewrites `EasySemVer.xml`) — by design, but CI and local runs must expect dirty files afterwards.
+rewrites `Vee.xml`) — by design, but CI and local runs must expect dirty files afterwards.
 
 **TST-M2 — Neutral rules.** ✅
 [`TestUnitAdded`](../src/Test/Evaluators/TestUnitAdded.cs),

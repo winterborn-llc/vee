@@ -1,5 +1,5 @@
-using Winterborn.Tools.EasySemVer.DataObject;
-using Winterborn.Tools.EasySemVer.Settings;
+using Winterborn.Tools.Vee.DataObject;
+using Winterborn.Tools.Vee.Settings;
 
 namespace Test;
 
@@ -9,7 +9,7 @@ public class TestRunOptions
     [Fact]
     public void SingleArgumentIsTheFolderRoot()
     {
-        var folder = Directory.CreateTempSubdirectory("easysemver-cli").FullName;
+        var folder = Directory.CreateTempSubdirectory("vee-cli").FullName;
         try
         {
             var options = RunOptions.Parse(folder);
@@ -41,7 +41,7 @@ public class TestRunOptions
     public void MissingDirectoryIsAnError()
     {
         Assert.Throws<InvalidOperationException>(
-            () => RunOptions.Parse(Path.Combine(Path.GetTempPath(), "easysemver-does-not-exist")));
+            () => RunOptions.Parse(Path.Combine(Path.GetTempPath(), "vee-does-not-exist")));
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public class TestRunOptions
     [Fact]
     public void JsonPathAndFolderCoexist()
     {
-        var folder = Directory.CreateTempSubdirectory("easysemver-cli").FullName;
+        var folder = Directory.CreateTempSubdirectory("vee-cli").FullName;
         try
         {
             var options = RunOptions.Parse(folder, "--json", "report.json");

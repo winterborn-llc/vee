@@ -37,13 +37,13 @@ never reused.
 **G-03 — Packaged targets point at an executable that isn't packed.** ⊘ Withdrawn
 **G-04 — Targets file not auto-imported (`NU5129`).** ⊘ Withdrawn
 
-All three were defects in one mechanism: consuming EasySemVer as a `PackageReference` that hooks
-itself into a consuming build. On 2026-08-02 that mechanism was withdrawn — EasySemVer is a CLI,
+All three were defects in one mechanism: consuming Vee as a `PackageReference` that hooks
+itself into a consuming build. On 2026-08-02 that mechanism was withdrawn — Vee is a CLI,
 distributed as a `dotnet tool`, as self-contained binaries, and as a GitHub Action
 (**INV-01**, **PKG-01/PKG-02**, **ACT-01…ACT-12**). A tool whose unit of work is *a folder* does not belong bolted
 to one arbitrary project inside it.
 
-Deleting `Winterborn.EasySemVer.targets` also removed the `NU5129` warning, so the build is now
+Deleting `Winterborn.Vee.targets` also removed the `NU5129` warning, so the build is now
 warning-free. **§20 O-05 is closed by withdrawal, not by repair.**
 
 ## Resolved
@@ -58,14 +58,14 @@ the persisted graph, and no parallel DTO tree exists to drift.
 *Satisfies:* PER-05, SYN-01, TST-05 — `Regression.TestProgramInvocation` passes.
 
 **G-05 — CI workflow is stale and cannot go green.** ✅ Resolved by the §17 workflow rewrite:
-`env.project` is `EasySemVer`, the SDK is `10.0.x`, the runner is `macos-latest` so the Swift
+`env.project` is `Vee`, the SDK is `10.0.x`, the runner is `macos-latest` so the Swift
 suite can run, and the unit and integration suites are separate steps.
 ℹ️ Since split out: build-and-test is a reusable workflow still on `macos-latest`, and the release
 job that depends on it runs on `ubuntu-latest` (CI-01).
 *Satisfies:* CI-01.
 
 **G-06 — CLI directory argument is ignored.** ✅ Resolved by **FLD-01**
-[`RunOptions.Parse`](../src/EasySemVer/Settings/RunOptions.cs) uses the argument as the folder
+[`RunOptions.Parse`](../src/Vee/Settings/RunOptions.cs) uses the argument as the folder
 root and validates *that* path. *Satisfies:* CLI-04.
 
 **G-07 — Adding a new method or property classified as Patch.** ✅ Resolved
@@ -135,7 +135,7 @@ and the workflow cannot drift, and was confirmed to fail when they do.
 
 The two-commit shape was not avoidable and is not a defect: ACT-02's Action runs a *published*
 binary, so nothing here can consume a capability in the same commit that introduces it.
-ℹ️ Retiring the `git add EasySemVer.xml src/*/*.csproj` glob was the point. It was silently wrong
+ℹ️ Retiring the `git add Vee.xml src/*/*.csproj` glob was the point. It was silently wrong
 for any project it did not match — a green run, a tag, and a commit with no bump in it.
 *Satisfies:* ACT-10. *Relates to:* ACT-02, ACT-11, ACT-12, CLI-10, REP-10.
 
@@ -143,7 +143,7 @@ for any project it did not match — a green run, a tag, and a commit with no bu
 The `report` input's description carried `${{ steps.version.outputs.report }}` as a worked example.
 GitHub evaluates expressions inside input descriptions, where the `steps` context does not exist, so
 `action.yml` failed template validation at *Set up job*: `Unrecognized named-value: 'steps'`. Every
-consumer of `winterborn-llc/easysemver@v16.0.0` gets that error before any step runs, and this
+consumer of `winterborn-llc/vee@v16.0.0` gets that error before any step runs, and this
 repository could not cut the fix because its own workflow pinned to that tag.
 
 Fixed by removing the example (it lives in the README), by `uses: ./` so a manifest is loaded by the
@@ -207,7 +207,7 @@ release at a time, until the documentation says nothing.
 The input could not ship in the commit that introduced the flag. ACT-02's step runs the
 **published** binary, and v20.0.1 rejected `--vnext-token-name` by name — which is not a
 hypothetical: the first push did pass it, and the run died at the version step with
-`EasySemVer does not recognise the option --vnext-token-name`. CI-03's ordering held and nothing was
+`Vee does not recognise the option --vnext-token-name`. CI-03's ordering held and nothing was
 released: no build, no commit, no tag, nothing on nuget.org.
 
 The commit after it removed the input, its release published **v20.0.2** — the first binary that
@@ -285,7 +285,7 @@ deliberately not undone
 `ExtendINamedTypeSymbol.GetFullyQualifiedName` cut a Roslyn display string at the first `::`, which
 for a generic type threw away everything before its last type argument. A property of type
 `List<CsharpMethodParameter>` was recorded as
-`Winterborn.Tools.EasySemVer.DataObject.Csharp.CsharpMethodParameter>` — a name with a dangling
+`Winterborn.Tools.Vee.DataObject.Csharp.CsharpMethodParameter>` — a name with a dangling
 angle bracket, no `List<`, and no way to tell it apart from a property of the element type. **81
 type names in this repository's own baseline were wrong that way.**
 

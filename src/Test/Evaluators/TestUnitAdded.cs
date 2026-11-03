@@ -1,6 +1,6 @@
-using Winterborn.Tools.EasySemVer.DataObject;
-using Winterborn.Tools.EasySemVer.Evaluation;
-using Winterborn.Tools.EasySemVer.Interfaces;
+using Winterborn.Tools.Vee.DataObject;
+using Winterborn.Tools.Vee.Evaluation;
+using Winterborn.Tools.Vee.Interfaces;
 
 namespace Test.Evaluators;
 
@@ -14,8 +14,8 @@ public class TestUnitAdded
 {
     public static TheoryData<IEvaluateUnitExistence> Evaluators =>
     [
-        new Winterborn.Tools.EasySemVer.Evaluators.Csharp.UnitAdded(),
-        new Winterborn.Tools.EasySemVer.Evaluators.Swift.UnitAdded()
+        new Winterborn.Tools.Vee.Evaluators.Csharp.UnitAdded(),
+        new Winterborn.Tools.Vee.Evaluators.Swift.UnitAdded()
     ];
 
     [Theory]

@@ -1,7 +1,7 @@
 using System.Text;
-using Winterborn.Tools.EasySemVer.Persistence;
-using Winterborn.Tools.EasySemVer.Settings;
-using Version = Winterborn.Tools.EasySemVer.DataObject.Version;
+using Winterborn.Tools.Vee.Persistence;
+using Winterborn.Tools.Vee.Settings;
+using Version = Winterborn.Tools.Vee.DataObject.Version;
 
 namespace Test.Persistence;
 
@@ -20,7 +20,7 @@ public class TestVersionTokens : IDisposable
     private const string TokenName = "stamp-here";
 
     private readonly string _folder =
-        Directory.CreateTempSubdirectory("easysemver-tokens").FullName;
+        Directory.CreateTempSubdirectory("vee-tokens").FullName;
 
     public TestVersionTokens()
     {
@@ -146,7 +146,7 @@ public class TestVersionTokens : IDisposable
     [Fact]
     public void TheBaselineIsNeverRewritten()
     {
-        var path = this.Write(MagicValues.SignatureFileName, $"<EasySemVer>{Token(TokenName)}</EasySemVer>");
+        var path = this.Write(MagicValues.SignatureFileName, $"<Vee>{Token(TokenName)}</Vee>");
 
         Assert.Empty(this.Stamp());
         Assert.Contains(Token(TokenName), File.ReadAllText(path));

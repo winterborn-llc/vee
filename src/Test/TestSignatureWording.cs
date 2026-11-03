@@ -1,6 +1,6 @@
-using Winterborn.Tools.EasySemVer.CodeReader.Csharp;
-using Winterborn.Tools.EasySemVer.DataObject.Csharp;
-using Winterborn.Tools.EasySemVer.Extensions;
+using Winterborn.Tools.Vee.CodeReader.Csharp;
+using Winterborn.Tools.Vee.DataObject.Csharp;
+using Winterborn.Tools.Vee.Extensions;
 
 namespace Test;
 
@@ -56,7 +56,7 @@ public class TestSignatureWording : IDisposable
         """;
 
     private readonly string _folderRoot =
-        Directory.CreateTempSubdirectory("easysemver-wording").FullName;
+        Directory.CreateTempSubdirectory("vee-wording").FullName;
 
     public void Dispose()
     {

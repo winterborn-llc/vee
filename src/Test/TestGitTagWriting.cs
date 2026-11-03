@@ -1,10 +1,10 @@
-using Winterborn.Tools.EasySemVer.CodeReader.Swift;
-using Winterborn.Tools.EasySemVer.DataObject;
-using Winterborn.Tools.EasySemVer.Interfaces;
-using Winterborn.Tools.EasySemVer.Process;
-using Winterborn.Tools.EasySemVer.Providers;
-using Winterborn.Tools.EasySemVer.Settings;
-using Version = Winterborn.Tools.EasySemVer.DataObject.Version;
+using Winterborn.Tools.Vee.CodeReader.Swift;
+using Winterborn.Tools.Vee.DataObject;
+using Winterborn.Tools.Vee.Interfaces;
+using Winterborn.Tools.Vee.Process;
+using Winterborn.Tools.Vee.Providers;
+using Winterborn.Tools.Vee.Settings;
+using Version = Winterborn.Tools.Vee.DataObject.Version;
 
 namespace Test;
 
@@ -103,7 +103,7 @@ public class TestGitTagWriting
     [Fact]
     public void AGoModuleGetsAWritableTagSourceOnlyWhenOptedIn()
     {
-        var root = Directory.CreateTempSubdirectory("easysemver-go").FullName;
+        var root = Directory.CreateTempSubdirectory("vee-go").FullName;
         try
         {
             Directory.CreateDirectory(Path.Combine(root, "svc"));

@@ -1,6 +1,6 @@
-using Winterborn.Tools.EasySemVer.Interfaces;
-using Winterborn.Tools.EasySemVer.Process;
-using Winterborn.Tools.EasySemVer.Providers;
+using Winterborn.Tools.Vee.Interfaces;
+using Winterborn.Tools.Vee.Process;
+using Winterborn.Tools.Vee.Providers;
 
 namespace Test.Vb;
 
@@ -11,7 +11,7 @@ namespace Test.Vb;
 public class TestVbProvider : IDisposable
 {
     private readonly string _folderRoot =
-        Directory.CreateTempSubdirectory("easysemver-vb-provider").FullName;
+        Directory.CreateTempSubdirectory("vee-vb-provider").FullName;
 
     /// <summary>
     /// One instance for the whole test, deliberately. A provider learns the folder root during
@@ -103,7 +103,7 @@ public class TestVbProvider : IDisposable
             """);
 
         var unit = this.Provider.Discover(this._folderRoot).Single();
-        this.Provider.WriteVersion(unit, new Winterborn.Tools.EasySemVer.DataObject.Version("5.0.0"));
+        this.Provider.WriteVersion(unit, new Winterborn.Tools.Vee.DataObject.Version("5.0.0"));
 
         Assert.Contains("5.0.0", File.ReadAllText(path));
     }
@@ -115,7 +115,7 @@ public class TestVbProvider : IDisposable
         var path = this.WriteProject("Widgets", "<Project Sdk=\"Microsoft.NET.Sdk\" />");
 
         var unit = this.Provider.Discover(this._folderRoot).Single();
-        this.Provider.WriteVersion(unit, new Winterborn.Tools.EasySemVer.DataObject.Version("5.0.0"));
+        this.Provider.WriteVersion(unit, new Winterborn.Tools.Vee.DataObject.Version("5.0.0"));
 
         Assert.DoesNotContain("5.0.0", File.ReadAllText(path));
     }

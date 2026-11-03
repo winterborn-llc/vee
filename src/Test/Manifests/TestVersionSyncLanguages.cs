@@ -1,7 +1,7 @@
-using Winterborn.Tools.EasySemVer.Interfaces;
-using Winterborn.Tools.EasySemVer.Process;
-using Winterborn.Tools.EasySemVer.Providers;
-using Version = Winterborn.Tools.EasySemVer.DataObject.Version;
+using Winterborn.Tools.Vee.Interfaces;
+using Winterborn.Tools.Vee.Process;
+using Winterborn.Tools.Vee.Providers;
+using Version = Winterborn.Tools.Vee.DataObject.Version;
 
 namespace Test.Manifests;
 
@@ -18,7 +18,7 @@ namespace Test.Manifests;
 public class TestVersionSyncLanguages : IDisposable
 {
     private readonly string _folderRoot =
-        Directory.CreateTempSubdirectory("easysemver-version-sync").FullName;
+        Directory.CreateTempSubdirectory("vee-version-sync").FullName;
 
     private readonly IReadOnlyList<ILanguageProvider> _providers =
         LanguageProviders.Create(new ProcessRunner());

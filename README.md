@@ -1,6 +1,6 @@
-# EasySemVer from Winterborn
+# Vee from Winterborn
 
-EasySemVer works out what your next version number is, from what actually changed in your public
+Vee works out what your next version number is, from what actually changed in your public
 API, and writes it into every place a version already lives in your code.
 
 Nobody decides the number and nobody has to remember to bump it. A removed method is Major because
@@ -30,7 +30,7 @@ not one it can see: a surface built by reflection, dispatch on a string key, end
 from configuration, a wire contract that only exists once something is serialized. None of that is
 declared, so none of it is compared, and changing it reads as an implementation change — a Patch.
 The assumption is that **the objects as represented are your contract**. Where that is not true of
-part of your API, treat the version EasySemVer computes as a floor rather than the whole verdict,
+part of your API, treat the version Vee computes as a floor rather than the whole verdict,
 and keep deciding that part yourself.
 
 Two ways to use it. The **GitHub Action** is the whole of the setup for most repositories and is
@@ -48,7 +48,7 @@ bring with it are in the [contributors' guide](readme-contributors.md).
 Add it to a workflow and the repository versions, commits and tags itself. Nothing needs .NET
 installed: the Action downloads a self-contained binary for the runner's platform.
 
-**Seed a version first.** EasySemVer only writes into version properties that already exist, so
+**Seed a version first.** Vee only writes into version properties that already exist, so
 put a starting value wherever you want the number to land — an `<AssemblyVersion>`, a
 `MARKETING_VERSION`, a `.podspec` — and commit it before the first run. With nothing seeded
 anywhere the run still succeeds and still tags a release, but no file in your source carries the
@@ -60,7 +60,7 @@ is the full list of places that count.
 Two steps go into your release workflow, in these two places:
 
 ```
-checkout → [ EasySemVer: version ] → your build and tests → [ EasySemVer: commit and tag ] → your publish
+checkout → [ Vee: version ] → your build and tests → [ Vee: commit and tag ] → your publish
 ```
 
 Save this as `.github/workflows/release.yml`, or lift the two marked steps into the workflow you
@@ -95,13 +95,13 @@ jobs:
     # Increment our new versions before we build, so what the build carries the new version
     - name: Compute and apply the version
       id: version
-      uses: winterborn-llc/easysemver@v21
+      uses: winterborn-llc/vee@v21
 
     # Your build, package and tests, unchanged.
 
     # After your tests, before you publish, commit the version details and apply the tags
     - name: Commit and tag the release
-      uses: winterborn-llc/easysemver@v21
+      uses: winterborn-llc/vee@v21
       with:
         commit: true
         tag: true
@@ -121,7 +121,7 @@ The ordering is the part worth getting right:
 
 `report:` hands the second step the first one's verdict, so the version is computed once no matter
 how many times the action appears. Those two steps are lifted from
-[`.github/workflows/dotnet.yml`](.github/workflows/dotnet.yml), the workflow EasySemVer releases
+[`.github/workflows/dotnet.yml`](.github/workflows/dotnet.yml), the workflow Vee releases
 *itself* with, and a test fails if the two ever differ.
 
 ## Adding them to a workflow you already have
@@ -131,12 +131,12 @@ The two steps, on their own — the first before your build, the second after yo
 ```yaml
 - name: Compute and apply the version
   id: version
-  uses: winterborn-llc/easysemver@v21
+  uses: winterborn-llc/vee@v21
 ```
 
 ```yaml
 - name: Commit and tag the release
-  uses: winterborn-llc/easysemver@v21
+  uses: winterborn-llc/vee@v21
   with:
     commit: true
     tag: true
@@ -148,7 +148,7 @@ Plus the three things the job around them needs:
 | | Why |
 |-|-----|
 | `permissions: contents: write` | To push the commit and the tag. Naming any permission replaces the defaults wholesale, so name every one you need. |
-| `fetch-depth: 0` on the checkout | EasySemVer seeds from the highest version it can find, and git tags are one of the places it looks. A shallow clone hides them and seeds too low. |
+| `fetch-depth: 0` on the checkout | Vee seeds from the highest version it can find, and git tags are one of the places it looks. A shallow clone hides them and seeds too low. |
 | `concurrency: { group: release, cancel-in-progress: false }` | Two pushes landing together would seed from the same version, compute the same next one, and race. |
 
 **If you build nothing in between, use one step instead.** Versioning, committing and tagging
@@ -158,7 +158,7 @@ goes into any repository unedited:
 ```yaml
 - name: Version, commit and tag
   id: version
-  uses: winterborn-llc/easysemver@v21
+  uses: winterborn-llc/vee@v21
   with:
     commit: true
     tag: true
@@ -180,7 +180,7 @@ Split it the moment something is built between the two, for the ordering reasons
 | `vnext-token-name` | `vnext` | The token stamped with the new version is `{{`this`}}`. See [Putting the version in your own text](#putting-the-version-in-your-own-text) |
 | `increment` | — | Raise the version by `major`, `minor` or `patch` instead of by the verdict. See [Telling it the delta yourself](#telling-it-the-delta-yourself) |
 | `report` | — | Act on an earlier step's `report` output instead of versioning again |
-| `version` | the release this manifest shipped with | Which EasySemVer release to run |
+| `version` | the release this manifest shipped with | Which Vee release to run |
 | `token` | `${{ github.token }}` | Only needs overriding if this repository is private to you |
 
 `commit` and `tag` both default to `false`. Pushing a version bump to your repository is your
@@ -194,7 +194,7 @@ from the tool falling over.
 ### Versioning a subdirectory
 
 ```yaml
-- uses: winterborn-llc/easysemver@v21
+- uses: winterborn-llc/vee@v21
   with:
     folder: src
 ```
@@ -209,7 +209,7 @@ PR check that says what merging would do:
 
 ```yaml
 - id: version
-  uses: winterborn-llc/easysemver@v21
+  uses: winterborn-llc/vee@v21
   with:
     dry-run: true
 
@@ -236,7 +236,7 @@ Every invocation publishes its verdict as step outputs, whether or not it commit
 
 ```yaml
 - id: version
-  uses: winterborn-llc/easysemver@v21
+  uses: winterborn-llc/vee@v21
 
 - run: echo "${{ steps.version.outputs.change-type }} → ${{ steps.version.outputs.version }}"
 ```
@@ -264,7 +264,7 @@ bare command:
 
 ```yaml
 - id: version
-  run: easysemver .
+  run: vee .
 
 - run: echo "${{ steps.version.outputs.change-type }} → ${{ steps.version.outputs.version }}"
 ```
@@ -286,18 +286,18 @@ The seeding note above applies here too.
 **As a .NET tool**, if you already have a .NET SDK:
 
 ```bash
-dotnet tool install -g Winterborn.Tools.EasySemVer
+dotnet tool install -g Winterborn.Tools.Vee
 ```
 
 **As a standalone binary**, if you don't — a Swift-only repository, for instance. Grab the archive
-for your platform from the [releases page](https://github.com/winterborn-llc/easysemver/releases);
+for your platform from the [releases page](https://github.com/winterborn-llc/vee/releases);
 it bundles its own runtime and needs nothing else installed. Archives are published for
 `linux-x64`, `linux-arm64`, `osx-x64`, `osx-arm64` and `win-x64`.
 
 ## The command
 
 ```bash
-easysemver /path/to/your/folder
+vee /path/to/your/folder
 ```
 
 With no argument it uses the current working directory. There is at most one directory argument;
@@ -357,15 +357,15 @@ They are the same value unless the run was told its delta — see
 
 ## Wiring it into a build
 
-EasySemVer is a command; wire it in with whatever your build already uses. It deliberately ships
+Vee is a command; wire it in with whatever your build already uses. It deliberately ships
 no MSBuild integration of its own — a tool whose unit of work is *a folder* does not belong
 bolted to one arbitrary project inside it.
 
 From MSBuild, if that is where your release process lives:
 
 ```xml
-<Target Name="EasySemVer" BeforeTargets="Build" Condition="'$(Configuration)' == 'Release'">
-    <Exec Command="easysemver &quot;$(MSBuildProjectDirectory)&quot;" />
+<Target Name="Vee" BeforeTargets="Build" Condition="'$(Configuration)' == 'Release'">
+    <Exec Command="vee &quot;$(MSBuildProjectDirectory)&quot;" />
 </Target>
 ```
 
@@ -385,7 +385,7 @@ and where the number is read from and written to.
 1. Walks the folder once and discovers every packageable unit.
 2. Extracts each unit's API signature **in its own language's terms** — a Swift protocol is a
    protocol, not "an interface"; a C# record is a record.
-3. Reads the baseline (`EasySemVer.xml` at the folder root) written by the previous run.
+3. Reads the baseline (`Vee.xml` at the folder root) written by the previous run.
 4. Runs the classification rules and takes the highest impact anything reported.
 5. Seeds from the highest version found in any version location in any unit, increments it, and
    writes that one version into every location that already exists.
@@ -426,7 +426,7 @@ prose: all of those are Major to the people using your library, and all of them 
 When you know something the diff cannot, say so.
 
 ```bash
-easysemver . --increment major
+vee . --increment major
 ```
 
 The run still does everything else it would have done — it discovers your units, reads their public
@@ -449,7 +449,7 @@ Major is something you can still find afterwards.
 
 ## Seeding versions
 
-EasySemVer only updates version properties that already exist; it never creates one. Seeding a
+Vee only updates version properties that already exist; it never creates one. Seeding a
 value is how a team opts a location in:
 
 ```xml
@@ -467,13 +467,13 @@ converges on it from the next run onwards.
 
 Languages come in two tiers, and the difference is worth understanding before you rely on either.
 
-**Read** languages are the product as described above: EasySemVer finds their packages, reads their
+**Read** languages are the product as described above: Vee finds their packages, reads their
 public API, decides Major/Minor/Patch, and stamps the result.
 
 **Versioned** languages are found and stamped, but **never read** — so they never contribute to the
 Major/Minor/Patch decision. In a repository that mixes tiers, the change type is decided by the
 Read languages and the resulting version is written into everything. In a repository with *only*
-Versioned languages, every run is a Patch: EasySemVer becomes a version stamper rather than a
+Versioned languages, every run is a Patch: Vee becomes a version stamper rather than a
 version decider, which is useful, but it is not the same product.
 
 | Language | Tier | Package is | Version lives in |
@@ -532,7 +532,7 @@ written back to every one of them that already exists.
 
 A manifest is only written where the version is already a **literal**. A `composer.json` with no
 `version` key, a `pyproject.toml` using `dynamic = ["version"]`, a Maven module inheriting its
-version from a parent — all are left exactly as they are. EasySemVer updates version locations; it
+version from a parent — all are left exactly as they are. Vee updates version locations; it
 never creates one, in any language.
 
 It also never touches a version that is not yours. A manifest mentions versions it does not own — a
@@ -546,7 +546,7 @@ Reading it would be a disaster: the value is routinely a bare integer like `87`,
 the whole folder's version up with no way back down. `CFBundleVersion` in `Info.plist` is usually
 `$(CURRENT_PROJECT_VERSION)` and follows from it.
 
-Git tags are read as a seed on every run. Writing one needs `--tag`, and even then EasySemVer
+Git tags are read as a seed on every run. Writing one needs `--tag`, and even then Vee
 creates a **local** tag and never pushes it — a local tag is something you can delete, a pushed one
 is not. Publishing it is left to whatever already publishes your releases; the GitHub Action's own
 `tag: true` step does that, after your tests rather than before them. If the tag already exists the
@@ -567,13 +567,13 @@ That is worth paying only when the target genuinely cannot hold the number.
 
 The case where it can't is **Mach-O `DYLIB_CURRENT_VERSION`**, which caps the second and third
 segments at 255 (and the first at 65535). In a stock Xcode project that setting derives from
-`CURRENT_PROJECT_VERSION` — which EasySemVer now writes — so on a **framework or dylib target**,
+`CURRENT_PROJECT_VERSION` — which Vee now writes — so on a **framework or dylib target**,
 the first run after patch passes 255 fails to link. Apps don't link that setting and are unaffected.
 
 So set the ceilings if you ship a framework or dylib target from an `.xcodeproj`:
 
 ```bash
-easysemver /path/to/your/folder --max-minor 255 --max-patch 255
+vee /path/to/your/folder --max-minor 255 --max-patch 255
 ```
 
 To be clear about what this is *not*: Swift Package Manager package versions are git tags and have
@@ -584,7 +584,7 @@ versions and Win32 `FILEVERSION` fields cap every segment at 65535.
 
 ## Putting the version in your own text
 
-The table above is every place EasySemVer knows the shape of. For everywhere else — a changelog
+The table above is every place Vee knows the shape of. For everywhere else — a changelog
 heading, a Helm chart, a docs page, an installer script — mark the spot with `{{vnext}}` and the
 run replaces it with the version it just computed:
 
@@ -610,18 +610,18 @@ point, and the thing to understand before adopting it. A file that wants the ver
 has to be marked again every release; for a changelog, writing the next entry is what does that.
 
 Skipped without asking: excluded directories (the same list [discovery
-uses](#excluded-directories)), the `EasySemVer.xml` baseline, binary files, and text that is not
+uses](#excluded-directories)), the `Vee.xml` baseline, binary files, and text that is not
 UTF-8. Everything else in a stamped file survives byte for byte, a byte-order mark included.
 
-If `{{vnext}}` legitimately means something else in your repository, rename the one EasySemVer
+If `{{vnext}}` legitimately means something else in your repository, rename the one Vee
 stamps:
 
 ```bash
-easysemver . --vnext-token-name release   # now it looks for {{release}}
+vee . --vnext-token-name release   # now it looks for {{release}}
 ```
 
 ```yaml
-- uses: winterborn-llc/easysemver@v21
+- uses: winterborn-llc/vee@v21
   with:
     vnext-token-name: release
 ```
@@ -632,21 +632,21 @@ documents the default.
 
 ## The baseline file
 
-`EasySemVer.xml` lives at the folder root and **should be committed**. It is what makes the diff
+`Vee.xml` lives at the folder root and **should be committed**. It is what makes the diff
 meaningful across machines and across time, and it is why runs should be gated on release builds
 rather than every developer build.
 
 It is a flat array of packageable units, each carrying its own language's signature:
 
 ```xml
-<EasySemVer formatVersion="4">
+<Vee formatVersion="4">
    <Unit language="csharp" unitId="Widgets" unitKind="csproj" path="src/Widgets/Widgets.csproj">
       <CsharpProject name="Widgets"> … </CsharpProject>
    </Unit>
    <Unit language="swift" unitId="Sources/Gadgets:Gadgets" unitKind="swiftpm-target" path="Sources/Gadgets">
       <SwiftModule name="Gadgets"> … </SwiftModule>
    </Unit>
-</EasySemVer>
+</Vee>
 ```
 
 Two runs over unchanged source on two machines produce byte-identical files: there are no
@@ -679,7 +679,7 @@ the leading-dot rule too, so a project that genuinely keeps source under a dotte
 say so:
 
 ```bash
-easysemver . --do-not-exclude build --do-not-exclude .generated
+vee . --do-not-exclude build --do-not-exclude .generated
 ```
 
 `Packages` is **not** excluded, deliberately. SwiftPM cloned dependencies into `Packages/` in the

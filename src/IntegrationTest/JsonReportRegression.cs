@@ -1,6 +1,6 @@
 using System.Text.Json;
-using Winterborn.Tools.EasySemVer;
-using Winterborn.Tools.EasySemVer.Persistence;
+using Winterborn.Tools.Vee;
+using Winterborn.Tools.Vee.Persistence;
 using Xunit;
 
 namespace IntegrationTest;
@@ -9,7 +9,7 @@ namespace IntegrationTest;
 public class JsonReportRegression : IDisposable
 {
     private readonly string _folderRoot =
-        Directory.CreateTempSubdirectory("easysemver-json").FullName;
+        Directory.CreateTempSubdirectory("vee-json").FullName;
 
     private string ReportPath => Path.Combine(this._folderRoot, "out", "report.json");
 
@@ -163,7 +163,7 @@ public class JsonReportRegression : IDisposable
         var written = this.ReadReport().GetProperty("writtenFiles")
             .EnumerateArray().Select(file => file.GetString()!).ToList();
 
-        Assert.Equal(["App.csproj", "EasySemVer.xml"], written);
+        Assert.Equal(["App.csproj", "Vee.xml"], written);
 
         foreach (var file in written)
         {
@@ -177,7 +177,7 @@ public class JsonReportRegression : IDisposable
 
     /// <summary>
     /// REP-10 - a unit nested under the folder root is reported by its relative path, which is the
-    /// case the hand-maintained `git add EasySemVer.xml src/*/*.csproj` glob used to miss silently.
+    /// case the hand-maintained `git add Vee.xml src/*/*.csproj` glob used to miss silently.
     /// </summary>
     [Fact]
     public void ANestedUnitIsNamedByItsPathRatherThanMissed()
@@ -217,7 +217,7 @@ public class JsonReportRegression : IDisposable
         var written = this.ReadReport().GetProperty("writtenFiles")
             .EnumerateArray().Select(file => file.GetString()!).ToList();
 
-        Assert.Equal(["App.csproj", "CHANGELOG.md", "EasySemVer.xml"], written);
+        Assert.Equal(["App.csproj", "CHANGELOG.md", "Vee.xml"], written);
         Assert.Equal("# 2.4.0", File.ReadAllText(Path.Combine(this._folderRoot, "CHANGELOG.md")));
     }
 
@@ -228,7 +228,7 @@ public class JsonReportRegression : IDisposable
         Assert.Equal(0, Program.Main(this._folderRoot, "--dry-run", "--json", this.ReportPath));
 
         Assert.Empty(this.ReadReport().GetProperty("writtenFiles").EnumerateArray());
-        Assert.False(File.Exists(Path.Combine(this._folderRoot, "EasySemVer.xml")));
+        Assert.False(File.Exists(Path.Combine(this._folderRoot, "Vee.xml")));
     }
 
     [Fact]

@@ -1,5 +1,5 @@
-using Winterborn.Tools.EasySemVer.CodeReader.Vb;
-using Winterborn.Tools.EasySemVer.Interfaces.Csharp;
+using Winterborn.Tools.Vee.CodeReader.Vb;
+using Winterborn.Tools.Vee.Interfaces.Csharp;
 
 namespace Test.Vb;
 
@@ -69,7 +69,7 @@ public class TestVbExtraction : IDisposable
         """;
 
     private readonly string _folderRoot =
-        Directory.CreateTempSubdirectory("easysemver-vb-extraction").FullName;
+        Directory.CreateTempSubdirectory("vee-vb-extraction").FullName;
 
     private readonly ICsharpProject _project;
 

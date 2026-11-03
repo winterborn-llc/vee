@@ -1,8 +1,8 @@
-using Winterborn.Tools.EasySemVer.DataObject;
-using Winterborn.Tools.EasySemVer.Evaluation;
-using Winterborn.Tools.EasySemVer.Interfaces;
-using Winterborn.Tools.EasySemVer.Process;
-using Winterborn.Tools.EasySemVer.Providers;
+using Winterborn.Tools.Vee.DataObject;
+using Winterborn.Tools.Vee.Evaluation;
+using Winterborn.Tools.Vee.Interfaces;
+using Winterborn.Tools.Vee.Process;
+using Winterborn.Tools.Vee.Providers;
 
 namespace Test;
 
@@ -15,7 +15,7 @@ namespace Test;
 public class TestContextualExclusions : IDisposable
 {
     private readonly string _folderRoot =
-        Directory.CreateTempSubdirectory("easysemver-exclusions").FullName;
+        Directory.CreateTempSubdirectory("vee-exclusions").FullName;
 
     private readonly IReadOnlyList<ILanguageProvider> _providers =
         LanguageProviders.Create(new ProcessRunner());
@@ -166,7 +166,7 @@ public class TestContextualExclusions : IDisposable
     [Fact]
     public void NothingIsExcludedGloballyByNameAnyMore()
     {
-        Assert.Empty(Winterborn.Tools.EasySemVer.Settings.MagicValues.ExcludedDirectoryNames);
+        Assert.Empty(Winterborn.Tools.Vee.Settings.MagicValues.ExcludedDirectoryNames);
     }
 
     /// <summary>The leading-dot rule is a convention rather than an ecosystem, and stays global.</summary>

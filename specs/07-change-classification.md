@@ -3,10 +3,10 @@
 How (baseline, current) signature pairs map to a SemVer change type. C# rules are R01–R42 here;
 Swift rules are S01–S38 in
 [12 §13](12-multi-language-swift-and-folder-model.md). Sources:
-[`ChangeClassifier.cs`](../src/EasySemVer/Evaluation/ChangeClassifier.cs),
-[`Evaluators/`](../src/EasySemVer/Evaluators) (neutral),
-[`Evaluators/Csharp/`](../src/EasySemVer/Evaluators/Csharp),
-[`Evaluators/Swift/`](../src/EasySemVer/Evaluators/Swift), and their tests in
+[`ChangeClassifier.cs`](../src/Vee/Evaluation/ChangeClassifier.cs),
+[`Evaluators/`](../src/Vee/Evaluators) (neutral),
+[`Evaluators/Csharp/`](../src/Vee/Evaluators/Csharp),
+[`Evaluators/Swift/`](../src/Vee/Evaluators/Swift), and their tests in
 [`src/Test/Evaluators/`](../src/Test/Evaluators).
 
 ## Architecture
@@ -39,7 +39,7 @@ class (TST-01), with no change to any aggregation logic.
 **CLS-01a — Neutral unit-existence rules.** ✅ *(§7)*
 "A shippable module appeared or disappeared" means the same thing in every language, so it is
 classified once, neutrally, by
-[`IEvaluateUnitExistence`](../src/EasySemVer/Interfaces/IEvaluateUnitExistence.cs) rules over the
+[`IEvaluateUnitExistence`](../src/Vee/Interfaces/IEvaluateUnitExistence.cs) rules over the
 unit lists: `UnitRemoved` (Major, NCL-01) and `UnitAdded` (Minor, NCL-02).
 
 **CLS-02 — Pairing.** ✅
@@ -99,7 +99,7 @@ R17 is deliberately **directional**: only optional→required fires. The reverse
 ### R18–R42 — the fidelity expansion (CSX-05)
 
 Added when the C# model grew to the full topology; each is a class in
-[`Evaluators/Csharp/`](../src/EasySemVer/Evaluators/Csharp) with its own test class.
+[`Evaluators/Csharp/`](../src/Vee/Evaluators/Csharp) with its own test class.
 
 | Rule | Was | Fires when… | Impact |
 |------|-----|-------------|:------:|

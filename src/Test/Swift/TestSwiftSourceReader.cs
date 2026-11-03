@@ -1,5 +1,5 @@
-using Winterborn.Tools.EasySemVer.DataObject.Swift;
-using Winterborn.Tools.EasySemVer.Interfaces.Swift;
+using Winterborn.Tools.Vee.DataObject.Swift;
+using Winterborn.Tools.Vee.Interfaces.Swift;
 
 namespace Test.Swift;
 
@@ -252,7 +252,7 @@ public class TestSwiftSourceReader
     public void NoMangledNamesReachTheModel()
     {
         var module = (SwiftModule)Module;
-        var xml = Winterborn.Tools.EasySemVer.Extensions.ExtendObject
+        var xml = Winterborn.Tools.Vee.Extensions.ExtendObject
             .SerializeToElement(module)
             .ToString();
 
