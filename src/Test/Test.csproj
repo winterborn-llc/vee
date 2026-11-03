@@ -5,8 +5,8 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <LangVersion>14</LangVersion>
-    <AssemblyVersion>21.3.2</AssemblyVersion>
-    <FileVersion>21.3.2</FileVersion>
+    <AssemblyVersion>21.3.3</AssemblyVersion>
+    <FileVersion>21.3.3</FileVersion>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
   <ItemGroup>
