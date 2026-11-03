@@ -1,7 +1,7 @@
-using Winterborn.Tools.EasySemVer.CodeReader.Swift;
-using Winterborn.Tools.EasySemVer.DataObject;
-using Winterborn.Tools.EasySemVer.Interfaces;
-using Version = Winterborn.Tools.EasySemVer.DataObject.Version;
+using Winterborn.Tools.Vee.CodeReader.Swift;
+using Winterborn.Tools.Vee.DataObject;
+using Winterborn.Tools.Vee.Interfaces;
+using Version = Winterborn.Tools.Vee.DataObject.Version;
 
 namespace Test.Swift;
 
@@ -9,7 +9,7 @@ namespace Test.Swift;
 public class TestSwiftVersionSources : IDisposable
 {
     private readonly string _folderRoot =
-        Directory.CreateTempSubdirectory("easysemver-versions").FullName;
+        Directory.CreateTempSubdirectory("vee-versions").FullName;
 
     public void Dispose()
     {
@@ -114,7 +114,7 @@ public class TestSwiftVersionSources : IDisposable
             this._folderRoot,
             isWritable: false);
 
-        source.Write(new Winterborn.Tools.EasySemVer.DataObject.Version("1.2.3"));
+        source.Write(new Winterborn.Tools.Vee.DataObject.Version("1.2.3"));
     }
 
     [Fact]

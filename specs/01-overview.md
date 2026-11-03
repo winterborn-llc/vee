@@ -2,7 +2,7 @@
 
 ## Product statement
 
-EasySemVer (`Winterborn.Tools.EasySemVer`) is a lightweight build-time utility that takes **a
+Vee (`Winterborn.Tools.Vee`) is a lightweight build-time utility that takes **a
 folder**, **automatically computes and applies Semantic Versioning** based on changes to the
 public API surface of everything inside it, and **keeps every version counter in that folder in
 sync** across every language it finds.
@@ -29,10 +29,10 @@ then on, each versioned build:
 | **Packageable unit** | One independently shippable module: a `.csproj`, a SwiftPM target, an Xcode target. The atom of add/remove detection and of version write-back. |
 | **Language provider** | The pluggable per-language implementation: discovery, extraction, classification, version read/write. |
 | **Signature** | A structural model of one unit's public API surface, **in that language's own topology**. C# has projects → classes/interfaces/structs/records/enums/delegates → members; Swift has modules → structs/classes/actors/enums/protocols → members. Neither is expressed in the other's vocabulary. See [05-signature-extraction.md](05-signature-extraction.md). |
-| **Baseline** | The signatures persisted from the previous run, stored as `EasySemVer.xml` in the folder root. See [06-signature-persistence.md](06-signature-persistence.md). |
+| **Baseline** | The signatures persisted from the previous run, stored as `Vee.xml` in the folder root. See [06-signature-persistence.md](06-signature-persistence.md). |
 | **Evaluator** | A rule object that inspects (baseline, current) signatures and reports whether a specific kind of difference is present, plus the SemVer impact of that difference. See [07-change-classification.md](07-change-classification.md). |
 | **Version locations** | Every place a version already lives: `.csproj` properties, `MARKETING_VERSION`, `CFBundleShortVersionString`, a `.podspec`, a generated Swift constant, git tags. See [08](08-version-model.md). |
-| **Change type** | One of `Major`, `Minor`, `Patch` ([`VersionType`](../src/EasySemVer/DataObject/VersionType.cs)). |
+| **Change type** | One of `Major`, `Minor`, `Patch` ([`VersionType`](../src/Vee/DataObject/VersionType.cs)). |
 
 ## Foundational design decisions
 
@@ -67,13 +67,13 @@ a fresh baseline is written. See [PER-03/PER-04](06-signature-persistence.md).
 
 ## Processing pipeline
 
-Implemented in [`VersioningRun.Execute`](../src/EasySemVer/Evaluation/VersioningRun.cs):
+Implemented in [`VersioningRun.Execute`](../src/Vee/Evaluation/VersioningRun.cs):
 
 ```mermaid
 flowchart TD
     A[Folder root\nfrom CLI arg / cwd] --> B[Each provider discovers its units\none walk, exclusions applied]
     B --> C[Each provider extracts its units'\nsignatures - fatal on failure]
-    C --> D[Load baseline EasySemVer.xml\n→ empty if missing/unreadable]
+    C --> D[Load baseline Vee.xml\n→ empty if missing/unreadable]
     C --> E[Read seed version = highest across\nevery version source in every unit]
     D --> F[Neutral unit-existence rules\n+ each provider's classification]
     C --> F
@@ -98,7 +98,7 @@ failure — leaves the working tree untouched.
 - Build counters as *seeds*. `CURRENT_PROJECT_VERSION` is written so it keeps moving, but it is
   never read back as a version (MVR-06, §20 O-01).
 - Configuration files / tuning knobs; behavior is fixed by
-  [`MagicValues`](../src/EasySemVer/Settings/MagicValues.cs). The one exception is the
+  [`MagicValues`](../src/Vee/Settings/MagicValues.cs). The one exception is the
   `--dry-run` flag (§20 O-04).
 
 ## Implemented in doc 12

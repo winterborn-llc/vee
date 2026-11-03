@@ -1,10 +1,10 @@
-using Winterborn.Tools.EasySemVer.DataObject;
-using Winterborn.Tools.EasySemVer.DataObject.Csharp;
-using Winterborn.Tools.EasySemVer.Evaluation;
-using Winterborn.Tools.EasySemVer.Evaluators;
-using Winterborn.Tools.EasySemVer.Interfaces;
-using Winterborn.Tools.EasySemVer.Process;
-using Winterborn.Tools.EasySemVer.Providers;
+using Winterborn.Tools.Vee.DataObject;
+using Winterborn.Tools.Vee.DataObject.Csharp;
+using Winterborn.Tools.Vee.Evaluation;
+using Winterborn.Tools.Vee.Evaluators;
+using Winterborn.Tools.Vee.Interfaces;
+using Winterborn.Tools.Vee.Process;
+using Winterborn.Tools.Vee.Providers;
 
 namespace Test.Evaluators;
 

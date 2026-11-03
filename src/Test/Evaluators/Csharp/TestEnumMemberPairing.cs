@@ -1,4 +1,4 @@
-using Winterborn.Tools.EasySemVer.Evaluators.Csharp;
+using Winterborn.Tools.Vee.Evaluators.Csharp;
 
 namespace Test.Evaluators.Csharp;
 

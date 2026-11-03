@@ -1,7 +1,7 @@
-using Winterborn.Tools.EasySemVer;
-using Winterborn.Tools.EasySemVer.Interfaces.Swift;
-using Winterborn.Tools.EasySemVer.Process;
-using Winterborn.Tools.EasySemVer.Providers;
+using Winterborn.Tools.Vee;
+using Winterborn.Tools.Vee.Interfaces.Swift;
+using Winterborn.Tools.Vee.Process;
+using Winterborn.Tools.Vee.Providers;
 using Xunit;
 
 namespace IntegrationTest;
@@ -20,7 +20,7 @@ public class XcodeRegression
 
         Assert.Equal(0, Program.Main(fixture.FolderRoot));
 
-        var baseline = File.ReadAllText(Path.Combine(fixture.FolderRoot, "EasySemVer.xml"));
+        var baseline = File.ReadAllText(Path.Combine(fixture.FolderRoot, "Vee.xml"));
         Assert.Contains("unitKind=\"xcode-target\"", baseline);
         Assert.Contains("unitId=\"App.xcodeproj:App\"", baseline);
 
@@ -43,14 +43,14 @@ public class XcodeRegression
         using var fixture = new XcodeProjectFixture();
 
         Assert.Equal(0, Program.Main(fixture.FolderRoot));
-        var firstBaseline = File.ReadAllText(Path.Combine(fixture.FolderRoot, "EasySemVer.xml"));
+        var firstBaseline = File.ReadAllText(Path.Combine(fixture.FolderRoot, "Vee.xml"));
 
         Assert.Equal(0, Program.Main(fixture.FolderRoot));
 
         Assert.Contains("MARKETING_VERSION = 3.3.1;", File.ReadAllText(fixture.ProjectFilePath));
         Assert.Equal(
             firstBaseline,
-            File.ReadAllText(Path.Combine(fixture.FolderRoot, "EasySemVer.xml")));
+            File.ReadAllText(Path.Combine(fixture.FolderRoot, "Vee.xml")));
     }
 
     [Fact]

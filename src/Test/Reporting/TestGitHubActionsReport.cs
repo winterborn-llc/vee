@@ -1,8 +1,8 @@
-using Winterborn.Tools.EasySemVer.DataObject;
-using Winterborn.Tools.EasySemVer.Evaluation;
-using Winterborn.Tools.EasySemVer.Providers;
-using Winterborn.Tools.EasySemVer.Reporting;
-using Version = Winterborn.Tools.EasySemVer.DataObject.Version;
+using Winterborn.Tools.Vee.DataObject;
+using Winterborn.Tools.Vee.Evaluation;
+using Winterborn.Tools.Vee.Providers;
+using Winterborn.Tools.Vee.Reporting;
+using Version = Winterborn.Tools.Vee.DataObject.Version;
 
 namespace Test.Reporting;
 
@@ -16,7 +16,7 @@ namespace Test.Reporting;
 /// </summary>
 public class TestGitHubActionsReport : IDisposable
 {
-    private readonly string _temp = Directory.CreateTempSubdirectory("easysemver-github").FullName;
+    private readonly string _temp = Directory.CreateTempSubdirectory("vee-github").FullName;
 
     private string OutputPath => Path.Combine(this._temp, "github-output");
 
@@ -165,7 +165,7 @@ public class TestGitHubActionsReport : IDisposable
             this.Environment());
 
         Assert.StartsWith(
-            "### EasySemVer: 2.3.4 → 3.0.0 (major)",
+            "### Vee: 2.3.4 → 3.0.0 (major)",
             File.ReadAllText(this.SummaryPath));
     }
 

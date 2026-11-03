@@ -1,4 +1,4 @@
-using Winterborn.Tools.EasySemVer.CodeReader.Csharp;
+using Winterborn.Tools.Vee.CodeReader.Csharp;
 
 namespace Test;
 

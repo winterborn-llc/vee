@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using Winterborn.Tools.EasySemVer.Persistence;
+using Winterborn.Tools.Vee.Persistence;
 using YamlDotNet.Serialization;
 using Xunit;
 
@@ -24,7 +24,7 @@ namespace IntegrationTest;
 [Trait("Toolchain", "Bash")]
 public class ActionRegression : IDisposable
 {
-    private readonly string _temp = Directory.CreateTempSubdirectory("easysemver-action").FullName;
+    private readonly string _temp = Directory.CreateTempSubdirectory("vee-action").FullName;
 
     /// <summary>Where the action's two steps put the binary and the report.</summary>
     private string RunnerTemp => Path.Combine(this._temp, "runner-temp");
@@ -47,7 +47,7 @@ public class ActionRegression : IDisposable
 
     /// <summary>
     /// ACT-01 - the file is at the repository root, which is what makes
-    /// <c>uses: winterborn-llc/easysemver@ref</c> resolve without a subdirectory.
+    /// <c>uses: winterborn-llc/vee@ref</c> resolve without a subdirectory.
     /// </summary>
     private static string RepositoryRoot
     {
@@ -80,7 +80,7 @@ public class ActionRegression : IDisposable
     /// </summary>
     private static string AssemblyName =>
         Regex.Match(
-            File.ReadAllText(Path.Combine(RepositoryRoot, "src", "EasySemVer", "EasySemVer.csproj")),
+            File.ReadAllText(Path.Combine(RepositoryRoot, "src", "Vee", "Vee.csproj")),
             @"<AssemblyName>(.+?)</AssemblyName>").Groups[1].Value;
 
     /// <summary>One named input's scalar setting, e.g. the <c>default</c> of <c>folder</c>.</summary>
@@ -131,7 +131,7 @@ public class ActionRegression : IDisposable
 
     /// <summary>
     /// Stands in for the GitHub Release. The archive holds a file under the name a self-contained
-    /// publish produces, so the Action's rename to <c>easysemver</c> is exercised for real; the
+    /// publish produces, so the Action's rename to <c>vee</c> is exercised for real; the
     /// file execs the tool built alongside this test, so what runs afterwards is the real thing.
     /// </summary>
     private void StubTheRelease(string rid)
@@ -143,7 +143,7 @@ public class ActionRegression : IDisposable
         File.WriteAllText(published, $"#!/bin/bash\nexec \"{toolPath}\" \"$@\"\n");
         Process.Start("chmod", ["+x", published])!.WaitForExit();
 
-        var archive = $"easysemver-{rid}.tar.gz";
+        var archive = $"vee-{rid}.tar.gz";
         Process.Start(new ProcessStartInfo("tar",
             ["-czf", Path.Combine(staging, archive), "-C", staging, AssemblyName]))!
             .WaitForExit();
@@ -167,7 +167,7 @@ public class ActionRegression : IDisposable
         ["RUNNER_ARCH"] = arch,
         ["RUNNER_TEMP"] = this.RunnerTemp,
         ["GITHUB_PATH"] = this.GithubPath,
-        ["EASYSEMVER_VERSION"] = "v0.0.0-test",
+        ["VEE_VERSION"] = "v0.0.0-test",
         ["GH_TOKEN"] = "stub",
         ["PATH"] = Path.Combine(this._temp, "stub-bin") + ":" + Environment.GetEnvironmentVariable("PATH")
     };
@@ -188,19 +188,19 @@ public class ActionRegression : IDisposable
         // them, because it no longer does the writing.
         ["GITHUB_OUTPUT"] = this.GithubOutput,
         ["GITHUB_STEP_SUMMARY"] = this.GithubStepSummary,
-        ["EASYSEMVER_FOLDER"] = folder,
-        ["EASYSEMVER_DRY_RUN"] = dryRun,
+        ["VEE_FOLDER"] = folder,
+        ["VEE_DRY_RUN"] = dryRun,
 
         // A runner always supplies every input, defaulting to '' - and the run body reads them
         // under `set -u`, so omitting them here would fail the step for a reason no workflow has.
-        ["EASYSEMVER_MAX_MINOR"] = maxMinor,
-        ["EASYSEMVER_MAX_PATCH"] = maxPatch,
-        ["EASYSEMVER_DO_NOT_EXCLUDE"] = doNotExclude,
-        ["EASYSEMVER_VNEXT_TOKEN_NAME"] = vnextTokenName,
-        ["EASYSEMVER_INCREMENT"] = increment,
+        ["VEE_MAX_MINOR"] = maxMinor,
+        ["VEE_MAX_PATCH"] = maxPatch,
+        ["VEE_DO_NOT_EXCLUDE"] = doNotExclude,
+        ["VEE_VNEXT_TOKEN_NAME"] = vnextTokenName,
+        ["VEE_INCREMENT"] = increment,
 
         // What appending to $GITHUB_PATH does for every later step.
-        ["PATH"] = Path.Combine(this.RunnerTemp, "easysemver") + ":" +
+        ["PATH"] = Path.Combine(this.RunnerTemp, "vee") + ":" +
                    Environment.GetEnvironmentVariable("PATH")
     };
 
@@ -229,18 +229,18 @@ public class ActionRegression : IDisposable
     {
         return new Dictionary<string, string>
         {
-            ["EASYSEMVER_COMMIT"] = commit,
-            ["EASYSEMVER_TAG"] = tag,
+            ["VEE_COMMIT"] = commit,
+            ["VEE_TAG"] = tag,
 
             // Empty, as it is in the one-step form: the report comes from the run step. The
             // two-step form is the same step with this set instead, which
             // TheTwoStepFormCommitsTheEarlierVerdict exercises.
-            ["EASYSEMVER_REPORT"] = string.Empty,
-            ["EASYSEMVER_RUN_REPORT"] = this.PublishedOutputs().GetValueOrDefault("report", string.Empty),
+            ["VEE_REPORT"] = string.Empty,
+            ["VEE_RUN_REPORT"] = this.PublishedOutputs().GetValueOrDefault("report", string.Empty),
             ["GITHUB_REF_NAME"] = branch,
 
             // The step runs where the workspace is, which for a caller is the checkout.
-            ["EASYSEMVER_WORKING_DIRECTORY"] = folder
+            ["VEE_WORKING_DIRECTORY"] = folder
         };
     }
 
@@ -297,7 +297,7 @@ public class ActionRegression : IDisposable
         string branch = "main")
     {
         var environment = this.CommitEnvironment(folder, commit, tag, branch);
-        var script = "cd \"$EASYSEMVER_WORKING_DIRECTORY\"\n" + Script(2);
+        var script = "cd \"$VEE_WORKING_DIRECTORY\"\n" + Script(2);
         return this.RunScript(script, environment);
     }
 
@@ -441,7 +441,7 @@ public class ActionRegression : IDisposable
         var readme = File.ReadAllText(Path.Combine(RepositoryRoot, "README.md"));
         var pinned = Setting("version", "default");
 
-        var referenced = Regex.Matches(readme, @"winterborn-llc/easysemver@(\S+)")
+        var referenced = Regex.Matches(readme, @"winterborn-llc/vee@(\S+)")
             .Select(match => match.Groups[1].Value)
             .Distinct()
             .ToList();
@@ -498,13 +498,13 @@ public class ActionRegression : IDisposable
 
     /// <summary>
     /// ACT-13 - the one line ACT-10 permits to differ. A consumer writes
-    /// <c>uses: winterborn-llc/easysemver@&lt;tag&gt;</c>; this repository writes <c>uses: ./</c>, so
+    /// <c>uses: winterborn-llc/vee@&lt;tag&gt;</c>; this repository writes <c>uses: ./</c>, so
     /// that the manifest a run is about to release is the manifest that run loaded. Everything
     /// after the <c>uses:</c> line - the inputs, which is where the meaning lives - still has to
     /// match exactly.
     /// </summary>
     private static string CanonicaliseUses(string yaml) =>
-        Regex.Replace(yaml, @"uses: (\./|winterborn-llc/easysemver@\S+)", "uses: <easysemver>");
+        Regex.Replace(yaml, @"uses: (\./|winterborn-llc/vee@\S+)", "uses: <vee>");
 
     /// <summary>
     /// ACT-13 - no input description may contain a <c>${{ }}</c> expression.
@@ -608,7 +608,7 @@ public class ActionRegression : IDisposable
         var table = Script(0);
         var start = table.IndexOf("case \"$RUNNER_OS", StringComparison.Ordinal);
         var end = table.IndexOf("\nesac", StringComparison.Ordinal);
-        var script = table[start..end] + "\nesac\necho \"easysemver-$rid.$archive\"";
+        var script = table[start..end] + "\nesac\necho \"vee-$rid.$archive\"";
 
         var result = this.RunScript(script, new Dictionary<string, string>
         {
@@ -620,7 +620,7 @@ public class ActionRegression : IDisposable
     }
 
     private string? RidFor(string os, string arch) =>
-        this.AssetFor(os, arch)?.Replace("easysemver-", "").Replace(".tar.gz", "").Replace(".zip", "");
+        this.AssetFor(os, arch)?.Replace("vee-", "").Replace(".tar.gz", "").Replace(".zip", "");
 
     private static readonly (string Os, string Arch)[] EveryRunnerPlatform =
     [
@@ -660,9 +660,9 @@ public class ActionRegression : IDisposable
     [Fact]
     public void WindowsAsksForAZipAndEveryoneElseForATarball()
     {
-        Assert.Equal("easysemver-win-x64.zip", this.AssetFor("Windows", "X64"));
-        Assert.Equal("easysemver-linux-arm64.tar.gz", this.AssetFor("Linux", "ARM64"));
-        Assert.Equal("easysemver-osx-arm64.tar.gz", this.AssetFor("macOS", "ARM64"));
+        Assert.Equal("vee-win-x64.zip", this.AssetFor("Windows", "X64"));
+        Assert.Equal("vee-linux-arm64.tar.gz", this.AssetFor("Linux", "ARM64"));
+        Assert.Equal("vee-osx-arm64.tar.gz", this.AssetFor("macOS", "ARM64"));
     }
 
     /// <summary>
@@ -754,7 +754,7 @@ public class ActionRegression : IDisposable
         Assert.True(result.ExitCode == 0, result.Output);
 
         var summary = File.ReadAllText(this.GithubStepSummary);
-        Assert.Contains("### EasySemVer: 2.3.4 → 2.4.0 (minor)", summary);
+        Assert.Contains("### Vee: 2.3.4 → 2.4.0 (minor)", summary);
 
         // A first run has no baseline, so NCL-02 names the unit that is new.
         Assert.Contains("Widgets", summary);
@@ -778,7 +778,7 @@ public class ActionRegression : IDisposable
         Assert.Equal("2.4.0", outputs["version"]);
 
         Assert.Equal(before, File.ReadAllText(Path.Combine(folder, "Widgets.csproj")));
-        Assert.False(File.Exists(Path.Combine(folder, "EasySemVer.xml")));
+        Assert.False(File.Exists(Path.Combine(folder, "Vee.xml")));
     }
 
     /// <summary>
@@ -798,7 +798,7 @@ public class ActionRegression : IDisposable
         Assert.Equal(1, result.ExitCode);
         Assert.Contains("dry-run must be", result.Output);
         Assert.Empty(this.PublishedOutputs());
-        Assert.False(File.Exists(Path.Combine(folder, "EasySemVer.xml")));
+        Assert.False(File.Exists(Path.Combine(folder, "Vee.xml")));
     }
 
     /// <summary>
@@ -866,7 +866,7 @@ public class ActionRegression : IDisposable
         var result = this.InstallAndRun(folder, "false", doNotExclude: "Pods\nMy Feature");
 
         Assert.Equal(0, result.ExitCode);
-        Assert.Contains("Feature.csproj", File.ReadAllText(Path.Combine(folder, "EasySemVer.xml")));
+        Assert.Contains("Feature.csproj", File.ReadAllText(Path.Combine(folder, "Vee.xml")));
     }
 
     /// <summary>
@@ -987,7 +987,7 @@ public class ActionRegression : IDisposable
         Assert.Equal(1, result.ExitCode);
         Assert.Contains("must be a whole number", result.Output);
         Assert.Empty(this.PublishedOutputs());
-        Assert.False(File.Exists(Path.Combine(folder, "EasySemVer.xml")));
+        Assert.False(File.Exists(Path.Combine(folder, "Vee.xml")));
     }
 
     /// <summary>
@@ -1039,7 +1039,7 @@ public class ActionRegression : IDisposable
         Assert.True(result.ExitCode == 0, result.Output);
 
         var remote = this.RemoteOf(folder);
-        Assert.Contains("EasySemVer: 2.4.0", this.Git(remote, "log", "-1", "--pretty=%s").Output);
+        Assert.Contains("Vee: 2.4.0", this.Git(remote, "log", "-1", "--pretty=%s").Output);
         Assert.Contains("v2.4.0", this.Git(remote, "tag", "--list").Output);
 
         // The tag names the commit that carries the bump, not the one the run started from.
@@ -1050,7 +1050,7 @@ public class ActionRegression : IDisposable
 
     /// <summary>
     /// REP-10 is why this is a fix and not a convenience. The old hand-written
-    /// `git add EasySemVer.xml src/*/*.csproj` misses a project one level deeper *silently*: green
+    /// `git add Vee.xml src/*/*.csproj` misses a project one level deeper *silently*: green
     /// run, tag pushed, and the commit it points at has no bump in it.
     /// </summary>
     [Fact]
@@ -1077,7 +1077,7 @@ public class ActionRegression : IDisposable
 
         var committed = this.Git(this.RemoteOf(folder), "show", "--name-only", "--pretty=", "main").Output;
         Assert.Contains("src/deep/Nested/Nested.csproj", committed);
-        Assert.Contains("EasySemVer.xml", committed);
+        Assert.Contains("Vee.xml", committed);
     }
 
     /// <summary>
@@ -1159,14 +1159,14 @@ public class ActionRegression : IDisposable
         Assert.Contains("2.4.0", File.ReadAllText(Path.Combine(folder, "Widgets.csproj")));
 
         var environment = this.CommitEnvironment(folder, commit: "true", tag: "true");
-        environment["EASYSEMVER_REPORT"] = report;
-        environment["EASYSEMVER_RUN_REPORT"] = string.Empty;
+        environment["VEE_REPORT"] = report;
+        environment["VEE_RUN_REPORT"] = string.Empty;
 
-        var result = this.RunScript("cd \"$EASYSEMVER_WORKING_DIRECTORY\"\n" + Script(2), environment);
+        var result = this.RunScript("cd \"$VEE_WORKING_DIRECTORY\"\n" + Script(2), environment);
         Assert.True(result.ExitCode == 0, result.Output);
 
         var remote = this.RemoteOf(folder);
-        Assert.Contains("EasySemVer: 2.4.0", this.Git(remote, "log", "-1", "--pretty=%s").Output);
+        Assert.Contains("Vee: 2.4.0", this.Git(remote, "log", "-1", "--pretty=%s").Output);
         Assert.Contains("v2.4.0", this.Git(remote, "tag", "--list").Output);
     }
 
@@ -1200,9 +1200,9 @@ public class ActionRegression : IDisposable
         Assert.True(this.InstallAndRun(folder, "false").ExitCode == 0);
 
         var environment = this.CommitEnvironment(folder, commit: "true", tag: "false");
-        environment["EASYSEMVER_RUN_REPORT"] = string.Empty;
+        environment["VEE_RUN_REPORT"] = string.Empty;
 
-        var result = this.RunScript("cd \"$EASYSEMVER_WORKING_DIRECTORY\"\n" + Script(2), environment);
+        var result = this.RunScript("cd \"$VEE_WORKING_DIRECTORY\"\n" + Script(2), environment);
 
         Assert.Equal(1, result.ExitCode);
         Assert.Contains("No report to commit", result.Output);
@@ -1341,12 +1341,12 @@ public class ActionRegression : IDisposable
         Assert.True(this.RunCommitStep(folder, "true", "false", branch: "release").ExitCode == 0);
 
         var remote = this.RemoteOf(folder);
-        Assert.Contains("EasySemVer: 2.4.0", this.Git(remote, "log", "-1", "--pretty=%s", "release").Output);
+        Assert.Contains("Vee: 2.4.0", this.Git(remote, "log", "-1", "--pretty=%s", "release").Output);
         Assert.Equal("Initial", this.Git(remote, "log", "-1", "--pretty=%s", "main").Output.Trim());
     }
 
     /// <summary>
-    /// The Action renames the published binary to <c>easysemver</c>. That is only safe because a
+    /// The Action renames the published binary to <c>vee</c>. That is only safe because a
     /// .NET apphost embeds the path to its managed assembly rather than deriving it from its own
     /// filename - if that ever stopped being true, every run of the Action would break on the
     /// first invocation, so it is pinned here rather than assumed.
@@ -1359,7 +1359,7 @@ public class ActionRegression : IDisposable
 
         // Beside the original, so the assembly and its dependencies resolve exactly as they do
         // inside an unpacked release archive.
-        var renamed = Path.Combine(AppContext.BaseDirectory, "easysemver-rename-test");
+        var renamed = Path.Combine(AppContext.BaseDirectory, "vee-rename-test");
         File.Copy(apphost, renamed, overwrite: true);
         try
         {

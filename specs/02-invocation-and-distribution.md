@@ -1,15 +1,15 @@
 # 02 — Invocation and Distribution
 
-Sources: [`Program.cs`](../src/EasySemVer/Program.cs),
-[`RunOptions.cs`](../src/EasySemVer/Settings/RunOptions.cs),
-[`EasySemVer.csproj`](../src/EasySemVer/EasySemVer.csproj),
+Sources: [`Program.cs`](../src/Vee/Program.cs),
+[`RunOptions.cs`](../src/Vee/Settings/RunOptions.cs),
+[`Vee.csproj`](../src/Vee/Vee.csproj),
 [`README.md`](../README.md).
 
 ## Command-line contract
 
 **CLI-01 — Deliverable is a console executable.** ✅
 The tool SHALL build as a console executable (`OutputType=Exe`) with assembly name
-`Winterborn.Tools.EasySemVer`, multi-targeting `net8.0`, `net9.0`, and `net10.0`
+`Winterborn.Tools.Vee`, multi-targeting `net8.0`, `net9.0`, and `net10.0`
 (`LangVersion` 14). `public static int Main(params string[] args)` is public so tests can invoke
 a run in-process, and returns its exit code rather than calling `Environment.Exit` — see ERR-03.
 
@@ -24,7 +24,7 @@ project directory.
 
 **CLI-04 — The directory argument is the folder root.** ✅ *(replaced by FLD-01; G-06 resolved)*
 The single directory argument SHALL be the folder root, resolved to a full path. It is used, not
-merely validated. Implemented in [`RunOptions.Parse`](../src/EasySemVer/Settings/RunOptions.cs).
+merely validated. Implemented in [`RunOptions.Parse`](../src/Vee/Settings/RunOptions.cs).
 
 **CLI-05 — No solution-root discovery.** ✅ *(retired by FLD-02; G-09 resolved)*
 The tool SHALL NOT search ancestors for a `.sln`/`.slnx` and SHALL NOT require one to exist. A
@@ -55,7 +55,7 @@ path is not mistaken for the folder argument whichever order the two are given i
 unrecognised `--option` is still rejected by name.
 
 **CLI-10 — The tool publishes its own GitHub Actions surface.** ✅
-When running under GitHub Actions, EasySemVer SHALL write the verdict to `$GITHUB_OUTPUT` and a
+When running under GitHub Actions, Vee SHALL write the verdict to `$GITHUB_OUTPUT` and a
 Markdown rendering of it to `$GITHUB_STEP_SUMMARY` itself. It SHALL do so by default when
 `GITHUB_ACTIONS` is `true`, and `--github` / `--no-github` SHALL force it on or off regardless.
 The published names are ACT-05's, so a workflow calling the CLI directly and a workflow using the
@@ -69,7 +69,7 @@ the bare command:
 
 ```yaml
 - id: version
-  run: easysemver .
+  run: vee .
 ```
 
 ℹ️ Detection rather than a required flag, because a flag you must remember is a flag you will
@@ -164,7 +164,7 @@ about the repository.
 ## Machine-readable report
 
 **REP-01 — `--json <path>` writes the run's verdict as a file.** ✅
-`easysemver <folder> --json <path>` SHALL write a JSON document describing the run to
+`vee <folder> --json <path>` SHALL write a JSON document describing the run to
 `<path>`. It SHALL NOT write JSON to stdout and SHALL NOT move the human log anywhere: LOG-01
 keeps stdout, unconditionally. A workflow that wants the verdict reads the file; nothing has to
 parse a log, and no existing stream contract changes.
@@ -281,14 +281,14 @@ and every version location stamped — as folder-root-relative paths with forwar
 ordinally and deduplicated. It SHALL be present and empty on a dry run.
 
 ```json
-"writtenFiles": [ "EasySemVer.xml", "src/EasySemVer/EasySemVer.csproj" ]
+"writtenFiles": [ "Vee.xml", "src/Vee/Vee.csproj" ]
 ```
 
 The demonstrated need is staging. A workflow that commits the bump has to name what to stage, and
 until this field existed it named the paths by hand:
 
 ```yaml
-git add EasySemVer.xml src/*/*.csproj      # what this replaces
+git add Vee.xml src/*/*.csproj      # what this replaces
 ```
 
 That glob is a latent defect, not merely a nuisance. It misses a project added one level deeper and
@@ -297,7 +297,7 @@ contain the version it claims. `git add -u` is not the alternative — TST-05's 
 mutates the working copy on purpose, so a blanket stage would sweep test debris into a release
 commit. Only the tool knows the answer, and now it says so.
 
-ℹ️ Each provider reports its own writes ([`ILanguageProvider.WriteVersion`](../src/EasySemVer/Interfaces/ILanguageProvider.cs)
+ℹ️ Each provider reports its own writes ([`ILanguageProvider.WriteVersion`](../src/Vee/Interfaces/ILanguageProvider.cs)
 returns them) rather than the caller inferring the list from a unit's version sources. The
 inference is right today and would go wrong the first time a provider wrote a file that was not one
 of them, which is the kind of coupling ML-02 exists to prevent.
@@ -334,7 +334,7 @@ release auditable rather than merely obedient.
 ## Invocation surfaces
 
 **INV-01 — The CLI is the product.** ✅ *(replaces MSB-01/MSB-02)*
-EasySemVer SHALL be consumed as a command that takes a folder. It SHALL NOT require, or ship,
+Vee SHALL be consumed as a command that takes a folder. It SHALL NOT require, or ship,
 any MSBuild integration: no targets file, no `Task` class, no `PackageReference` that a
 consuming project imports. That model was inherited from the AutoVersion design, never worked
 (G-02/G-03/G-04), and is withdrawn rather than repaired — a tool whose unit of work is *a
@@ -344,8 +344,8 @@ Consumers wire it in with whatever their build already uses. An MSBuild `Exec` r
 possible and is the consumer's own business:
 
 ```xml
-<Target Name="EasySemVer" BeforeTargets="Build" Condition="'$(Configuration)'=='Release'">
-    <Exec Command="easysemver &quot;$(MSBuildProjectDirectory)&quot;" />
+<Target Name="Vee" BeforeTargets="Build" Condition="'$(Configuration)'=='Release'">
+    <Exec Command="vee &quot;$(MSBuildProjectDirectory)&quot;" />
 </Target>
 ```
 
@@ -355,14 +355,14 @@ anyone who already has a .NET SDK, and self-contained per-platform binaries for 
 not — a Swift-only repository, most obviously.
 
 **INV-03 — Release-only gating is the consumer's job.** ℹ️ *(was MSB-03)*
-Because every run is a release (OVR-03), consumers SHOULD invoke EasySemVer only for builds that
+Because every run is a release (OVR-03), consumers SHOULD invoke Vee only for builds that
 are releases. The tool performs no configuration check of its own and has no opinion about
 branches; `--dry-run` (CLI-07) exists for the cases where you want the verdict without the
 consequences.
 
 **INV-04 — Timing is unconstrained.** ℹ️ *(was MSB-04)*
 Signatures are extracted from **source**, never from compiled assemblies, so it does not matter
-whether EasySemVer runs before or after a build. The increment is relative to the persisted
+whether Vee runs before or after a build. The increment is relative to the persisted
 baseline, not to build artifacts.
 
 **INV-05 — GitHub Action.** ✅ *(was planned; specified as ACT-01…ACT-09 below)*
@@ -373,7 +373,7 @@ workflow ever has to scrape a log.
 ## The GitHub Action
 
 **ACT-01 — A composite action at the repository root.** ✅
-`action.yml` SHALL sit at the repository root, so that `uses: winterborn-llc/easysemver@<ref>`
+`action.yml` SHALL sit at the repository root, so that `uses: winterborn-llc/vee@<ref>`
 resolves it with no subdirectory. It SHALL be a **composite** action. The deliverable is already a
 self-contained native binary (PKG-02), so a Docker action would add an image pull and a JS action
 would add a second language plus a committed `dist/` bundle to keep in sync with source — neither
@@ -445,7 +445,7 @@ difference.
 
 **ACT-11 — `commit` and `tag`.** ✅ *(added 2026-08-09)*
 With `commit: true` the Action SHALL stage exactly the files the run reported writing (REP-10),
-commit them as `EasySemVer: <version>`, and push to the branch that triggered the workflow. With
+commit them as `Vee: <version>`, and push to the branch that triggered the workflow. With
 `tag: true` it SHALL additionally create `v<version>` and push both refs **atomically**.
 
 - `tag: true` without `commit: true` SHALL fail by name. A tag names a commit; on a caller's
@@ -485,12 +485,12 @@ the two needs both, and collapsing them would have made this Action unusable for
 that ships it — which is the strongest possible signal that the collapse was wrong.
 
 ```yaml
-- uses: winterborn-llc/easysemver@<tag>            # stamp the version
+- uses: winterborn-llc/vee@<tag>            # stamp the version
   id: version
 
 #   ...restore, build, test...
 
-- uses: winterborn-llc/easysemver@<tag>            # release it, now that it is known good
+- uses: winterborn-llc/vee@<tag>            # release it, now that it is known good
   with:
     commit: true
     tag: true
@@ -549,7 +549,7 @@ every push here.
 ```yaml
 - name: Version, commit and tag
   id: version
-  uses: winterborn-llc/easysemver@<tag>
+  uses: winterborn-llc/vee@<tag>
   with:
     commit: true
     tag: true

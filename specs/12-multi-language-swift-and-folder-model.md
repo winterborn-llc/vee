@@ -17,7 +17,7 @@ re-litigate them. Genuinely open items are collected in §20.
 | Languages | C# only | C# and Swift, with a seam that makes Java/Kotlin/C++ additive |
 | Model shape | one `Solution → Project → Class` graph | **per-language native topologies**, never mapped onto each other |
 | Unit of packaging | `.csproj` | **packageable unit**: `.csproj`, SwiftPM target, Xcode target |
-| Baseline | `EasySemVer.xml`, unserializable (G-01, blocking) | `EasySemVer.xml` v2 — a flat **array of packageable units**, each carrying its language's native signature |
+| Baseline | `Vee.xml`, unserializable (G-01, blocking) | `Vee.xml` v2 — a flat **array of packageable units**, each carrying its language's native signature |
 | C# fidelity | public classes only (G-15) | full C# topology: interfaces, structs, records, enums, delegates, events, fields, nested types |
 | Version seed | highest of `AssemblyVersion`/`PackageVersion`/`FileVersion` across `.csproj` files | highest across **every** version source in **every** unit in **every** language |
 
@@ -140,7 +140,7 @@ unit-testable without the toolchain installed.
 ## 4. Folder invocation and discovery
 
 **FLD-01 — The argument is the root.** ✅ required — *replaces CLI-04, fixes G-06*
-`easysemver <folder>` SHALL use `<folder>` as the folder root. The current implementation
+`vee <folder>` SHALL use `<folder>` as the folder root. The current implementation
 validates the argument and then ignores it; that bug SHALL be fixed as part of this work.
 Zero arguments SHALL continue to mean the current working directory (CLI-03). Two or more
 arguments SHALL still fail (CLI-02).
@@ -274,19 +274,19 @@ release, once, and the next write closes it permanently.
 ## 6. Baseline format v2
 
 **BAS-01 — One file, an array of units.** ✅ required (D-10)
-The baseline SHALL be `<folder root>/EasySemVer.xml` (name preserved from PER-01), whose
+The baseline SHALL be `<folder root>/Vee.xml` (name preserved from PER-01), whose
 content is a **flat array of packageable-unit entries**. Each entry carries its language, unit
 id, unit kind, relative path, and that language's native signature payload. Sketch:
 
 ```xml
-<EasySemVer formatVersion="4">
-   <Unit language="csharp" unitId="EasySemVer" unitKind="csproj" path="src/EasySemVer/EasySemVer.csproj">
+<Vee formatVersion="4">
+   <Unit language="csharp" unitId="Vee" unitKind="csproj" path="src/Vee/Vee.csproj">
       <CsharpProject> … classes, interfaces, enums, … </CsharpProject>
    </Unit>
    <Unit language="swift" unitId="Sources/Widgets:Widgets" unitKind="swiftpm-target" path="Sources/Widgets">
       <SwiftModule> … structs, protocols, actors, … </SwiftModule>
    </Unit>
-</EasySemVer>
+</Vee>
 ```
 
 **BAS-02 — It must actually serialize.** ✅ required — *fixes G-01, satisfies PER-05*
@@ -382,7 +382,7 @@ Mechanical, behavior-preserving. All existing tests SHALL still pass after this 
 
 **REN-02 — Folder and namespace layout.** ✅ required (D-08)
 ```
-src/EasySemVer/
+src/Vee/
    Interfaces/            (neutral: ILanguageProvider, IPackageableUnit, IVersionSource, IRunProcess)
    Interfaces/Csharp/     Interfaces/Swift/
    DataObject/            (neutral: Version, VersionType, PackageableUnit)
@@ -394,7 +394,7 @@ src/EasySemVer/
    Persistence/           (baseline DTOs + reader/writer)
    Settings/
 ```
-Namespaces follow the folders: `Winterborn.Tools.EasySemVer.Interfaces.Csharp`,
+Namespaces follow the folders: `Winterborn.Tools.Vee.Interfaces.Csharp`,
 `…DataObject.Swift`, and so on. Tests mirror this:
 `src/Test/Evaluators/Csharp/`, `src/Test/Evaluators/Swift/`.
 
@@ -679,7 +679,7 @@ units:
 | Swift/Xcode | `CFBundleShortVersionString` in `Info.plist` | ✅ | ✅ |
 | Swift | `.podspec` `s.version` | ✅ | ✅ |
 | Swift | git tags matching `v?MAJOR.MINOR.PATCH` | ✅ | opt-in, §20 O-02 |
-| Swift | generated version file (e.g. `EasySemVerVersion.swift`) | ✅ | ✅ if it exists |
+| Swift | generated version file (e.g. `VeeVersion.swift`) | ✅ | ✅ if it exists |
 
 Unparseable values SHALL be skipped with a warning, never fail the run.
 
@@ -793,7 +793,7 @@ Delete `Experimental.cs`'s hard-coded `/Users/andrew/...` path test; remove the
 - **README.md** — folder-based usage, Swift prerequisites (toolchain, Xcode), the version
   sources table, and the stale "Auto-Version"/`UsingTask`/post-build content (G-17).
 - **.github/workflows/dotnet.yml** — macOS runner for the Swift suite, `AutoVersion` →
-  `EasySemVer`, SDK version (G-05).
+  `Vee`, SDK version (G-05).
 
 ## 18. Implementation order
 
@@ -837,7 +837,7 @@ test is green — Swift work built on an unwritable baseline cannot be verified.
 **O-01 — Build counters.** ✅ resolved — write, never read; see MVR-06.
 The concern that stopped this originally was the App Store's requirement that a build number
 increase within a version train: a mirrored counter only moves when the version does, so two
-uploads of one release would collide. That does not apply here, because EasySemVer runs on every
+uploads of one release would collide. That does not apply here, because Vee runs on every
 check-in to main and so the version — and with it the counter — moves on every upload. The
 seeding half of the objection stands unchanged and is why the counter is never read.
 
@@ -852,7 +852,7 @@ local tag only, never `push`, and never on by default. **Confirm.**
 **O-03 — Xcode build cost.** D-06 puts Xcode symbol graphs in scope, and D-03 makes failure
 fatal, so every versioned build of a repo containing an `.xcodeproj` runs `xcodebuild`. If P5
 proves this makes the tool impractical in a real build hook, the recommended fallback is a
-per-unit opt-out (`.easysemver` config marking a unit version-sync-only) rather than silently
+per-unit opt-out (`.vee` config marking a unit version-sync-only) rather than silently
 skipping. Report the measured cost from the fixture project when P5 lands.
 
 > **Measured, P5:** against
@@ -896,7 +896,7 @@ Out of scope for this spec, but flag it in the final summary — the tool is not
 it is fixed.
 
 > **Closed by withdrawal, 2026-08-02.** The owner's answer was that the shape of the product had
-> changed: EasySemVer is a CLI, distributed as a `dotnet tool` and as self-contained per-platform
+> changed: Vee is a CLI, distributed as a `dotnet tool` and as self-contained per-platform
 > binaries, with a GitHub Action as the intended third surface. The packaged-targets route was
 > therefore deleted rather than repaired, and G-02/G-03/G-04 are recorded as **withdrawn**, not
 > fixed. See [INV-01](02-invocation-and-distribution.md) and

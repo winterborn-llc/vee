@@ -1,6 +1,6 @@
-# EasySemVer — Implementation Specifications
+# Vee — Implementation Specifications
 
-This folder is the **specification** of the EasySemVer library: the concrete requirements for
+This folder is the **specification** of the Vee library: the concrete requirements for
 what the implementation does.
 
 It serves two purposes:
@@ -23,7 +23,7 @@ folder-based, multi-language system that exists today.
 | [03-packaging-and-distribution.md](03-packaging-and-distribution.md) | The `dotnet tool` package, the standalone binaries, CI/publishing |
 | [04-folder-discovery.md](04-folder-discovery.md) | Finding the folder root, the packageable units in it, and their source |
 | [05-signature-extraction.md](05-signature-extraction.md) | The per-language API-surface models and how each is extracted |
-| [06-signature-persistence.md](06-signature-persistence.md) | The `EasySemVer.xml` baseline file: format, read/write rules |
+| [06-signature-persistence.md](06-signature-persistence.md) | The `Vee.xml` baseline file: format, read/write rules |
 | [07-change-classification.md](07-change-classification.md) | The evaluator rules that map API diffs to Major/Minor/Patch |
 | [08-version-model.md](08-version-model.md) | Version parsing, comparison, incrementing, seed resolution |
 | [09-version-synchronization.md](09-version-synchronization.md) | Writing the new version back into every version location, and into `{{vnext}}` anywhere else |
@@ -50,7 +50,7 @@ folder-based, multi-language system that exists today.
     does not deliver it.
   - ℹ️ **Informative** — a behavior note, not a requirement.
 - Requirements are traced to source with relative links, e.g.
-  [`src/EasySemVer/Program.cs`](../src/EasySemVer/Program.cs).
+  [`src/Vee/Program.cs`](../src/Vee/Program.cs).
 
 ## Verification snapshot
 

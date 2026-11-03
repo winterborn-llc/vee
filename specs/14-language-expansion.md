@@ -324,7 +324,7 @@ Major, so this is recorded rather than fixed.
 A VB unit's signature SHALL be written as `<VisualBasicProject>`, not `<CsharpProject>`.
 
 The model is C#'s (VB-01) and stays C#'s; what does not follow is the name in the file a human
-reads. Someone opening `EasySemVer.xml` and finding their Visual Basic project described as a
+reads. Someone opening `Vee.xml` and finding their Visual Basic project described as a
 `<CsharpProject>` would reasonably conclude the tool had misread it.
 
 ℹ️ This is a BAS-07 event and it was free exactly once — before any repository had a VB baseline,

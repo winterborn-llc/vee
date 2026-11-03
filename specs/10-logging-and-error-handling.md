@@ -1,6 +1,6 @@
 # 10 — Logging and Error Handling
 
-Sources: [`Log.cs`](../src/EasySemVer/Log.cs), [`Program.cs`](../src/EasySemVer/Program.cs).
+Sources: [`Log.cs`](../src/Vee/Log.cs), [`Program.cs`](../src/Vee/Program.cs).
 
 ## Logging
 

@@ -1,9 +1,9 @@
-using Winterborn.Tools.EasySemVer;
-using Winterborn.Tools.EasySemVer.CodeReader.Csharp;
-using Winterborn.Tools.EasySemVer.CodeReader.Swift;
-using Winterborn.Tools.EasySemVer.Interfaces.Swift;
-using Winterborn.Tools.EasySemVer.Process;
-using Winterborn.Tools.EasySemVer.Providers;
+using Winterborn.Tools.Vee;
+using Winterborn.Tools.Vee.CodeReader.Csharp;
+using Winterborn.Tools.Vee.CodeReader.Swift;
+using Winterborn.Tools.Vee.Interfaces.Swift;
+using Winterborn.Tools.Vee.Process;
+using Winterborn.Tools.Vee.Providers;
 using Xunit;
 
 namespace IntegrationTest;
@@ -35,7 +35,7 @@ public class SwiftRegression
 
         Assert.Equal(0, Program.Main(fixture.FolderRoot));
 
-        var baseline = File.ReadAllText(Path.Combine(fixture.FolderRoot, "EasySemVer.xml"));
+        var baseline = File.ReadAllText(Path.Combine(fixture.FolderRoot, "Vee.xml"));
         Assert.Contains("language=\"csharp\"", baseline);
         Assert.Contains("language=\"swift\"", baseline);
         Assert.Contains("unitKind=\"swiftpm-target\"", baseline);
@@ -70,7 +70,7 @@ public class SwiftRegression
 
         Assert.Equal(0, Program.Main(fixture.FolderRoot));
         var first = File.ReadAllText(fixture.PodspecPath);
-        var firstBaseline = File.ReadAllText(Path.Combine(fixture.FolderRoot, "EasySemVer.xml"));
+        var firstBaseline = File.ReadAllText(Path.Combine(fixture.FolderRoot, "Vee.xml"));
 
         Assert.Equal(0, Program.Main(fixture.FolderRoot));
         var second = File.ReadAllText(fixture.PodspecPath);
@@ -81,7 +81,7 @@ public class SwiftRegression
         // BAS-04: unchanged source produces a byte-identical baseline.
         Assert.Equal(
             firstBaseline,
-            File.ReadAllText(Path.Combine(fixture.FolderRoot, "EasySemVer.xml")));
+            File.ReadAllText(Path.Combine(fixture.FolderRoot, "Vee.xml")));
     }
 
     /// <summary>TST-M6 - a real package tree on disk reaches the model intact.</summary>
@@ -145,7 +145,7 @@ public class SwiftRegression
         var originalPath = Environment.GetEnvironmentVariable("PATH");
         try
         {
-            Environment.SetEnvironmentVariable("PATH", "/nonexistent-for-easysemver");
+            Environment.SetEnvironmentVariable("PATH", "/nonexistent-for-vee");
             Assert.Equal(0, Program.Main(fixture.FolderRoot, "--json", reportPath));
         }
         finally
@@ -153,7 +153,7 @@ public class SwiftRegression
             Environment.SetEnvironmentVariable("PATH", originalPath);
         }
 
-        var baseline = File.ReadAllText(Path.Combine(fixture.FolderRoot, "EasySemVer.xml"));
+        var baseline = File.ReadAllText(Path.Combine(fixture.FolderRoot, "Vee.xml"));
         Assert.Contains("<SwiftModule name=\"Widgets\"", baseline);
         Assert.Contains("s.version = '2.4.0'", File.ReadAllText(fixture.PodspecPath));
         Assert.True(File.Exists(reportPath));

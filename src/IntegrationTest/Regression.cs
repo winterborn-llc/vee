@@ -1,6 +1,6 @@
-using Winterborn.Tools.EasySemVer;
-using Winterborn.Tools.EasySemVer.CodeReader.Csharp;
-using Winterborn.Tools.EasySemVer.Persistence;
+using Winterborn.Tools.Vee;
+using Winterborn.Tools.Vee.CodeReader.Csharp;
+using Winterborn.Tools.Vee.Persistence;
 using Xunit;
 
 namespace IntegrationTest;
@@ -8,7 +8,7 @@ namespace IntegrationTest;
 /// <summary>
 /// TST-M8 - the end-to-end proof that the baseline can actually be written (was G-01), and that
 /// each classification reaches the version on disk. Every case runs against a generated temporary
-/// tree: EasySemVer is never pointed at this repository, so running the suite leaves the working
+/// tree: Vee is never pointed at this repository, so running the suite leaves the working
 /// copy untouched. <see cref="SwiftRegression"/> covers the same ground for a multi-language tree
 /// but is traited off without a Swift toolchain, which makes this the C#-only safety net.
 /// </summary>
@@ -21,7 +21,7 @@ public class Regression
     [Fact]
     public void FolderWithNoSolutionFileIsVersioned()
     {
-        var folderRoot = Directory.CreateTempSubdirectory("easysemver-nosln").FullName;
+        var folderRoot = Directory.CreateTempSubdirectory("vee-nosln").FullName;
         try
         {
             var projectPath = Path.Combine(folderRoot, "Widget.csproj");
@@ -36,7 +36,7 @@ public class Regression
 
             Assert.Equal(0, Program.Main(folderRoot));
 
-            Assert.True(File.Exists(Path.Combine(folderRoot, "EasySemVer.xml")));
+            Assert.True(File.Exists(Path.Combine(folderRoot, "Vee.xml")));
 
             // First run sees a brand-new unit, so NCL-02 makes it Minor.
             Assert.Equal("3.5.0", new CsProjFile(projectPath).Version.ToString());
@@ -51,7 +51,7 @@ public class Regression
     [Fact]
     public void BaselineIsDeterministicAndCarriesNoAbsolutePaths()
     {
-        var folderRoot = Directory.CreateTempSubdirectory("easysemver-determinism").FullName;
+        var folderRoot = Directory.CreateTempSubdirectory("vee-determinism").FullName;
         try
         {
             var projectPath = Path.Combine(folderRoot, "Gadget.csproj");
@@ -67,10 +67,10 @@ public class Regression
                 "namespace Gadgets; public class Gadget { public string Name { get; set; } = \"\"; }");
 
             Assert.Equal(0, Program.Main(folderRoot));
-            var first = File.ReadAllText(Path.Combine(folderRoot, "EasySemVer.xml"));
+            var first = File.ReadAllText(Path.Combine(folderRoot, "Vee.xml"));
 
             Assert.Equal(0, Program.Main(folderRoot));
-            var second = File.ReadAllText(Path.Combine(folderRoot, "EasySemVer.xml"));
+            var second = File.ReadAllText(Path.Combine(folderRoot, "Vee.xml"));
 
             Assert.Equal(first, second);
             Assert.DoesNotContain(folderRoot, first);
@@ -146,12 +146,12 @@ public class Regression
         var folderRoot = CreateWidgetTree(out var projectPath, out _);
         try
         {
-            var baselinePath = Path.Combine(folderRoot, "EasySemVer.xml");
-            File.WriteAllText(baselinePath, "<EasySemVer formatVersion=\"3\" />");
+            var baselinePath = Path.Combine(folderRoot, "Vee.xml");
+            File.WriteAllText(baselinePath, "<Vee formatVersion=\"3\" />");
 
             Assert.Equal(1, Program.Main(folderRoot));
 
-            Assert.Equal("<EasySemVer formatVersion=\"3\" />", File.ReadAllText(baselinePath));
+            Assert.Equal("<Vee formatVersion=\"3\" />", File.ReadAllText(baselinePath));
             Assert.Equal("1.2.3", new CsProjFile(projectPath).Version.ToString());
         }
         finally
@@ -172,7 +172,7 @@ public class Regression
         {
             Assert.Equal(0, Program.Main(folderRoot, "--dry-run"));
 
-            Assert.False(File.Exists(Path.Combine(folderRoot, "EasySemVer.xml")));
+            Assert.False(File.Exists(Path.Combine(folderRoot, "Vee.xml")));
             Assert.Equal("1.2.3", new CsProjFile(projectPath).Version.ToString());
         }
         finally
@@ -394,7 +394,7 @@ public class Regression
     /// </summary>
     private static string CreateWidgetTree(out string projectPath, out string sourcePath)
     {
-        var folderRoot = Directory.CreateTempSubdirectory("easysemver-csharp").FullName;
+        var folderRoot = Directory.CreateTempSubdirectory("vee-csharp").FullName;
 
         projectPath = Path.Combine(folderRoot, "Widgets.csproj");
         File.WriteAllText(projectPath, """

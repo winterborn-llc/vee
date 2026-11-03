@@ -1,12 +1,12 @@
 # 06 — Signature Persistence (the Baseline)
 
 How the previous run's signatures are stored, loaded, and replaced.
-Sources: [`BaselineFile.cs`](../src/EasySemVer/Persistence/BaselineFile.cs),
-[`ExtendObject.cs`](../src/EasySemVer/Extensions/ExtendObject.cs),
-[`MagicValues.cs`](../src/EasySemVer/Settings/MagicValues.cs).
+Sources: [`BaselineFile.cs`](../src/Vee/Persistence/BaselineFile.cs),
+[`ExtendObject.cs`](../src/Vee/Extensions/ExtendObject.cs),
+[`MagicValues.cs`](../src/Vee/Settings/MagicValues.cs).
 
 **PER-01 — Location and name.** ✅
-The baseline SHALL live at `<folder root>/EasySemVer.xml` (`MagicValues.SignatureFileName`).
+The baseline SHALL live at `<folder root>/Vee.xml` (`MagicValues.SignatureFileName`).
 One baseline per folder.
 
 **PER-02 — Baseline is shared state.** ℹ️
@@ -50,19 +50,19 @@ run mutates nothing.
 
 **PER-07 — Format.** ✅ *(BAS-01…BAS-04)*
 The baseline SHALL be a self-contained, indented XML document whose root is
-`<EasySemVer formatVersion="4">` and whose content is a **flat array of packageable units**, each
+`<Vee formatVersion="4">` and whose content is a **flat array of packageable units**, each
 carrying its language, unit id, unit kind, folder-root-relative path, and that language's native
 signature payload:
 
 ```xml
-<EasySemVer formatVersion="4">
-   <Unit language="csharp" unitId="EasySemVer" unitKind="csproj" path="src/EasySemVer/EasySemVer.csproj">
-      <CsharpProject name="EasySemVer"> … </CsharpProject>
+<Vee formatVersion="4">
+   <Unit language="csharp" unitId="Vee" unitKind="csproj" path="src/Vee/Vee.csproj">
+      <CsharpProject name="Vee"> … </CsharpProject>
    </Unit>
    <Unit language="swift" unitId="Sources/Widgets:Widgets" unitKind="swiftpm-target" path="Sources/Widgets">
       <SwiftModule name="Widgets"> … </SwiftModule>
    </Unit>
-</EasySemVer>
+</Vee>
 ```
 
 The envelope is language-agnostic: the payload element is produced and consumed by the owning

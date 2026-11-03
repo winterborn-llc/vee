@@ -17,7 +17,7 @@ internal class XcodeProjectFixture : IDisposable
 
     internal XcodeProjectFixture()
     {
-        this.FolderRoot = Directory.CreateTempSubdirectory("easysemver-xcode").FullName;
+        this.FolderRoot = Directory.CreateTempSubdirectory("vee-xcode").FullName;
         CopyDirectory(GetSourceDirectory(), this.FolderRoot);
         Directory.Move(
             Path.Combine(this.FolderRoot, TemplateName),

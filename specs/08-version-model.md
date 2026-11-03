@@ -1,9 +1,9 @@
 # 08 — Version Model
 
 The version value type and how the run's starting version is determined.
-Sources: [`Version.cs`](../src/EasySemVer/DataObject/Version.cs),
-[`CsProjFileVersion.cs`](../src/EasySemVer/CodeReader/Csharp/CsProjFileVersion.cs),
-[`CodeReader/Swift/`](../src/EasySemVer/CodeReader/Swift) for the Swift and Xcode sources; tests in
+Sources: [`Version.cs`](../src/Vee/DataObject/Version.cs),
+[`CsProjFileVersion.cs`](../src/Vee/CodeReader/Csharp/CsProjFileVersion.cs),
+[`CodeReader/Swift/`](../src/Vee/CodeReader/Swift) for the Swift and Xcode sources; tests in
 [`TestVersion.cs`](../src/Test/TestVersion.cs) and
 [`TestExtractingVersionFromCsProjFile.cs`](../src/Test/TestExtractingVersionFromCsProjFile.cs).
 

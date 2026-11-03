@@ -1,5 +1,5 @@
-using Winterborn.Tools.EasySemVer.CodeReader.Swift;
-using Version = Winterborn.Tools.EasySemVer.DataObject.Version;
+using Winterborn.Tools.Vee.CodeReader.Swift;
+using Version = Winterborn.Tools.Vee.DataObject.Version;
 
 namespace Test.Swift;
 
@@ -33,7 +33,7 @@ public class TestXcodeVersionSources : IDisposable
         """;
 
     private readonly string _folderRoot =
-        Directory.CreateTempSubdirectory("easysemver-xcode").FullName;
+        Directory.CreateTempSubdirectory("vee-xcode").FullName;
 
     public void Dispose()
     {
@@ -158,7 +158,7 @@ public class TestXcodeVersionSources : IDisposable
         var version = new MarketingVersionSource(path, "project.pbxproj").Read();
 
         Assert.Equal("1.2.0", version!.ToString());
-        version.Increment(Winterborn.Tools.EasySemVer.DataObject.VersionType.Patch);
+        version.Increment(Winterborn.Tools.Vee.DataObject.VersionType.Patch);
         Assert.Equal("1.2.1", version.ToString());
     }
 

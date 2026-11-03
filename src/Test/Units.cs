@@ -1,6 +1,6 @@
-using Winterborn.Tools.EasySemVer.DataObject;
-using Winterborn.Tools.EasySemVer.Interfaces;
-using Winterborn.Tools.EasySemVer.Providers;
+using Winterborn.Tools.Vee.DataObject;
+using Winterborn.Tools.Vee.Interfaces;
+using Winterborn.Tools.Vee.Providers;
 
 namespace Test;
 

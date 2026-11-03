@@ -1,8 +1,8 @@
-using Winterborn.Tools.EasySemVer.CodeReader.Swift;
-using Winterborn.Tools.EasySemVer.DataObject.Swift;
-using Winterborn.Tools.EasySemVer.Interfaces.Swift;
-using Winterborn.Tools.EasySemVer.Process;
-using Winterborn.Tools.EasySemVer.Providers;
+using Winterborn.Tools.Vee.CodeReader.Swift;
+using Winterborn.Tools.Vee.DataObject.Swift;
+using Winterborn.Tools.Vee.Interfaces.Swift;
+using Winterborn.Tools.Vee.Process;
+using Winterborn.Tools.Vee.Providers;
 
 namespace Test.Swift;
 
@@ -83,7 +83,7 @@ public class TestSwiftExtractionFailure
 
         Assert.Equal(1, exitCode);
         Assert.Equal(before, Snapshot(fixture.FolderRoot));
-        Assert.False(File.Exists(Path.Combine(fixture.FolderRoot, "EasySemVer.xml")));
+        Assert.False(File.Exists(Path.Combine(fixture.FolderRoot, "Vee.xml")));
     }
 
     /// <summary>
@@ -112,8 +112,8 @@ public class TestSwiftExtractionFailure
     {
         try
         {
-            Winterborn.Tools.EasySemVer.Evaluation.VersioningRun.Execute(
-                Winterborn.Tools.EasySemVer.Settings.RunOptions.Parse(folderRoot),
+            Winterborn.Tools.Vee.Evaluation.VersioningRun.Execute(
+                Winterborn.Tools.Vee.Settings.RunOptions.Parse(folderRoot),
                 LanguageProviders.Create(new ProcessRunner()));
             return 0;
         }

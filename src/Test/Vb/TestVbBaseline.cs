@@ -1,8 +1,8 @@
-using Winterborn.Tools.EasySemVer.DataObject.Csharp;
-using Winterborn.Tools.EasySemVer.Interfaces;
-using Winterborn.Tools.EasySemVer.Interfaces.Csharp;
-using Winterborn.Tools.EasySemVer.Process;
-using Winterborn.Tools.EasySemVer.Providers;
+using Winterborn.Tools.Vee.DataObject.Csharp;
+using Winterborn.Tools.Vee.Interfaces;
+using Winterborn.Tools.Vee.Interfaces.Csharp;
+using Winterborn.Tools.Vee.Process;
+using Winterborn.Tools.Vee.Providers;
 
 namespace Test.Vb;
 
@@ -24,7 +24,7 @@ public class TestVbBaseline
         var project = new CsharpProject("Widgets");
         project.Classes.Add(new CsharpClass { Name = "Widgets.Gadget" });
 
-        return new Winterborn.Tools.EasySemVer.DataObject.PackageableUnit
+        return new Winterborn.Tools.Vee.DataObject.PackageableUnit
         {
             LanguageId = "vb",
             UnitId = "Widgets",

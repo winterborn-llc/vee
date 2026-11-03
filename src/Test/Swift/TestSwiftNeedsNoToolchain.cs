@@ -1,6 +1,6 @@
-using Winterborn.Tools.EasySemVer.Interfaces;
-using Winterborn.Tools.EasySemVer.Process;
-using Winterborn.Tools.EasySemVer.Providers;
+using Winterborn.Tools.Vee.Interfaces;
+using Winterborn.Tools.Vee.Process;
+using Winterborn.Tools.Vee.Providers;
 
 namespace Test.Swift;
 
@@ -122,7 +122,7 @@ public class TestSwiftNeedsNoToolchain
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
         while (directory != null)
         {
-            var candidate = Path.Combine(directory.FullName, "EasySemVer");
+            var candidate = Path.Combine(directory.FullName, "Vee");
             if (Directory.Exists(Path.Combine(candidate, "Interfaces")))
             {
                 return candidate;
@@ -131,6 +131,6 @@ public class TestSwiftNeedsNoToolchain
             directory = directory.Parent;
         }
 
-        throw new DirectoryNotFoundException("Unable to locate src/EasySemVer");
+        throw new DirectoryNotFoundException("Unable to locate src/Vee");
     }
 }

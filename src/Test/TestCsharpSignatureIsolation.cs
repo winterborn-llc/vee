@@ -1,5 +1,5 @@
-using Winterborn.Tools.EasySemVer.CodeReader.Csharp;
-using Winterborn.Tools.EasySemVer.Interfaces.Csharp;
+using Winterborn.Tools.Vee.CodeReader.Csharp;
+using Winterborn.Tools.Vee.Interfaces.Csharp;
 
 namespace Test;
 
@@ -54,7 +54,7 @@ public class TestCsharpSignatureIsolation : IDisposable
         """;
 
     private readonly string _folderRoot =
-        Directory.CreateTempSubdirectory("easysemver-isolation").FullName;
+        Directory.CreateTempSubdirectory("vee-isolation").FullName;
 
     private readonly ICsharpProject _project;
 

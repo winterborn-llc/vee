@@ -1,9 +1,9 @@
 using System.Text.Json;
-using Winterborn.Tools.EasySemVer.DataObject;
-using Winterborn.Tools.EasySemVer.Evaluation;
-using Winterborn.Tools.EasySemVer.Providers;
-using Winterborn.Tools.EasySemVer.Reporting;
-using Version = Winterborn.Tools.EasySemVer.DataObject.Version;
+using Winterborn.Tools.Vee.DataObject;
+using Winterborn.Tools.Vee.Evaluation;
+using Winterborn.Tools.Vee.Providers;
+using Winterborn.Tools.Vee.Reporting;
+using Version = Winterborn.Tools.Vee.DataObject.Version;
 
 namespace Test.Reporting;
 
@@ -350,8 +350,8 @@ public class TestJsonChangeReport
     public void TheWrittenFilesAreSorted()
     {
         Assert.Equal(
-            ["EasySemVer.xml", "src/App/App.csproj", "src/Widgets/Widgets.csproj"],
-            WrittenFiles("src/Widgets/Widgets.csproj", "EasySemVer.xml", "src/App/App.csproj"));
+            ["Vee.xml", "src/App/App.csproj", "src/Widgets/Widgets.csproj"],
+            WrittenFiles("src/Widgets/Widgets.csproj", "Vee.xml", "src/App/App.csproj"));
     }
 
     /// <summary>
@@ -362,8 +362,8 @@ public class TestJsonChangeReport
     public void ASharedLocationIsReportedOnce()
     {
         Assert.Equal(
-            ["EasySemVer.xml", "shared/Version.xml"],
-            WrittenFiles("shared/Version.xml", "EasySemVer.xml", "shared/Version.xml"));
+            ["Vee.xml", "shared/Version.xml"],
+            WrittenFiles("shared/Version.xml", "Vee.xml", "shared/Version.xml"));
     }
 
     /// <summary>

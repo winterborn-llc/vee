@@ -17,7 +17,7 @@ concurrency:
 
 env:
   configuration: Release
-  project: EasySemVer
+  project: Vee
 
 jobs:
   # The same reusable job ci.yml runs on every other branch, so main is not held to a different
@@ -49,7 +49,7 @@ jobs:
       major: ${{ steps.version.outputs.major }}
 
     steps:
-    # Full history and tags: EasySemVer seeds from the highest version it can find, and git tags
+    # Full history and tags: Vee seeds from the highest version it can find, and git tags
     # are one of the places it looks. A shallow clone hides them and would seed too low.
     - uses: actions/checkout@v5
       with:
@@ -103,7 +103,7 @@ jobs:
         #
         # G-25 was the one release this could not be passed in: ACT-02 runs the published binary,
         # and v20.0.1 rejected the flag by name. v20.0.2 is the first that understands it.
-        vnext-token-name: easysemver-does-not-stamp-this
+        vnext-token-name: vee-does-not-stamp-this
 
     # ------------------------------------------------------------------------------------------
     # CI-05. The manifest about to be tagged is repointed at the release this run is cutting, and
@@ -131,7 +131,7 @@ jobs:
         # The ref's character class is spelled out rather than "everything up to the next space",
         # so a ref written mid-sentence does not swallow the backtick or full stop after it.
         sed -i "s|^    default: v.*|    default: v${version}|" action.yml
-        sed -i "s|winterborn-llc/easysemver@v[A-Za-z0-9._-]*|winterborn-llc/easysemver@v${major}|g" README.md
+        sed -i "s|winterborn-llc/vee@v[A-Za-z0-9._-]*|winterborn-llc/vee@v${major}|g" README.md
 
         # Asserted, not assumed. A rename or a reformat that stopped either pattern matching would
         # ship a stale pin in silence, which is the exact failure this step exists to end.
@@ -140,7 +140,7 @@ jobs:
           exit 1
         fi
 
-        if grep -o 'winterborn-llc/easysemver@[A-Za-z0-9._-]*' README.md | grep -qv "@v${major}$"; then
+        if grep -o 'winterborn-llc/vee@[A-Za-z0-9._-]*' README.md | grep -qv "@v${major}$"; then
           echo "::error::README.md still carries a uses: ref that is not @v${major}." >&2
           exit 1
         fi
@@ -245,7 +245,7 @@ jobs:
 
     - name: Publish ${{ matrix.runtime }}
       run: >
-        dotnet publish src/EasySemVer/EasySemVer.csproj
+        dotnet publish src/Vee/Vee.csproj
         --configuration ${{ env.configuration }}
         --framework net10.0
         --runtime ${{ matrix.runtime }}
@@ -256,13 +256,13 @@ jobs:
       run: |
         cd publish/${{ matrix.runtime }}
         if [ "${{ matrix.runtime }}" = "win-x64" ]; then
-          zip -qr ../../easysemver-${{ matrix.runtime }}.zip .
+          zip -qr ../../vee-${{ matrix.runtime }}.zip .
         else
-          tar -czf ../../easysemver-${{ matrix.runtime }}.tar.gz .
+          tar -czf ../../vee-${{ matrix.runtime }}.tar.gz .
         fi
 
     - name: Attach to the release
-      run: gh release upload "${tag}" easysemver-${{ matrix.runtime }}.* --clobber
+      run: gh release upload "${tag}" vee-${{ matrix.runtime }}.* --clobber
 
   # Publishing is what makes the release immutable, so it happens last, once all five archives
   # are attached. Until this runs the release is a draft and invisible to anyone but the repo's
@@ -282,7 +282,7 @@ jobs:
       run: gh release edit "${tag}" --repo "${GITHUB_REPOSITORY}" --draft=false
 
   # CI-05. `v<major>` follows the newest release of that major, so a consumer can write
-  # `uses: winterborn-llc/easysemver@v17` and keep getting the current 17.x without editing their
+  # `uses: winterborn-llc/vee@v17` and keep getting the current 17.x without editing their
   # workflow - the same convention `actions/checkout@v5` and every other well-known action uses.
   # GitHub resolves a `uses:` ref literally and does no version matching of its own, so a moving
   # tag is the only mechanism there is.

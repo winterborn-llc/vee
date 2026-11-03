@@ -1,6 +1,6 @@
-# Contributing to EasySemVer
+# Contributing to Vee
 
-This is the guide for working *on* EasySemVer. For using it, see the [README](README.md).
+This is the guide for working *on* Vee. For using it, see the [README](README.md).
 
 Read [the rules of the design](#the-rules-of-the-design) before you propose a shape that differs
 from the one that is here. Most of those rules exist to prevent a specific failure that has
@@ -31,7 +31,7 @@ way when you add code.
 
 ## A run, end to end
 
-One pass, in [`Evaluation/VersioningRun.cs`](src/EasySemVer/Evaluation/VersioningRun.cs):
+One pass, in [`Evaluation/VersioningRun.cs`](src/Vee/Evaluation/VersioningRun.cs):
 
 ```
 Program.Main
@@ -61,21 +61,21 @@ in-process — which is how the integration tests invoke it — cannot take the 
 ## The language seam
 
 The whole architecture is one plugin boundary:
-[`ILanguageProvider`](src/EasySemVer/Interfaces/ILanguageProvider.cs). A language contributes
+[`ILanguageProvider`](src/Vee/Interfaces/ILanguageProvider.cs). A language contributes
 discovery, test-code detection, extraction, classification, version reading, version writing, and
 baseline serialization — and nothing else in the tool knows it exists.
 
 | Folder | What lives there |
 |--------|------------------|
-| [`Providers/`](src/EasySemVer/Providers) | One provider per language, plus the two registries |
-| [`Interfaces/Csharp/`](src/EasySemVer/Interfaces/Csharp), [`Interfaces/Swift/`](src/EasySemVer/Interfaces/Swift) | Each language's own topology, as interfaces |
-| [`DataObject/Csharp/`](src/EasySemVer/DataObject/Csharp), `DataObject/Swift/` | The implementations of those |
-| [`CodeReader/Csharp/`](src/EasySemVer/CodeReader/Csharp), `CodeReader/Swift/` | Extraction: source in, signature out |
-| [`Evaluators/Csharp/`](src/EasySemVer/Evaluators/Csharp), `Evaluators/Swift/` | One class per rule, plus that language's rule list |
-| [`Evaluation/`](src/EasySemVer/Evaluation) | The neutral core: the run, the classifier, the pairing, the walk |
-| [`Persistence/`](src/EasySemVer/Persistence) | The baseline file, which treats every signature as opaque |
-| [`Reporting/`](src/EasySemVer/Reporting) | Three formatters over one report document |
-| [`Process/`](src/EasySemVer/Process) | The one place anything shells out |
+| [`Providers/`](src/Vee/Providers) | One provider per language, plus the two registries |
+| [`Interfaces/Csharp/`](src/Vee/Interfaces/Csharp), [`Interfaces/Swift/`](src/Vee/Interfaces/Swift) | Each language's own topology, as interfaces |
+| [`DataObject/Csharp/`](src/Vee/DataObject/Csharp), `DataObject/Swift/` | The implementations of those |
+| [`CodeReader/Csharp/`](src/Vee/CodeReader/Csharp), `CodeReader/Swift/` | Extraction: source in, signature out |
+| [`Evaluators/Csharp/`](src/Vee/Evaluators/Csharp), `Evaluators/Swift/` | One class per rule, plus that language's rule list |
+| [`Evaluation/`](src/Vee/Evaluation) | The neutral core: the run, the classifier, the pairing, the walk |
+| [`Persistence/`](src/Vee/Persistence) | The baseline file, which treats every signature as opaque |
+| [`Reporting/`](src/Vee/Reporting) | Three formatters over one report document |
+| [`Process/`](src/Vee/Process) | The one place anything shells out |
 
 **The neutral core knows exactly three things**: the packageable unit, the `VersionType` verdict,
 and the `Version` value. There is no shared abstraction of "type" or "member" and there never will
@@ -87,23 +87,23 @@ whether a change is breaking.
 language, and hands each provider its own slice — so a provider never sees another language's work
 and never has to check. Even the two rules every language agrees on, "a unit appeared" and "a unit
 vanished", are owned per language: they subclass
-[`UnitExistence`](src/EasySemVer/Evaluators/UnitExistence.cs) rather than being neutral, so that
+[`UnitExistence`](src/Vee/Evaluators/UnitExistence.cs) rather than being neutral, so that
 agreeing costs a subclass and disagreeing costs an override.
 
 **Adding a language is one provider, one set of folders, and one line** in
-[`LanguageProviders.cs`](src/EasySemVer/Providers/LanguageProviders.cs) — with no edit to the core.
+[`LanguageProviders.cs`](src/Vee/Providers/LanguageProviders.cs) — with no edit to the core.
 That is the acceptance test for whether the seam is still right. If your language needs a change
 inside `Evaluation/` or `Persistence/` to work, the seam is wrong and *that* is the bug.
 
 Version conventions have the same shape and their own registry:
-[`VersionSourceFactories`](src/EasySemVer/Providers/VersionSourceFactories.cs). A new place a
+[`VersionSourceFactories`](src/Vee/Providers/VersionSourceFactories.cs). A new place a
 version can live — some other manifest, some other constant — is a class implementing
 `IDiscoverVersionSources` and one line there, not an edit to a provider.
 
 ## How each language is read
 
 **C#** is parsed from source with Roslyn
-([`CsharpUnitBuilder`](src/EasySemVer/CodeReader/Csharp/CsharpUnitBuilder.cs)) — a compilation over
+([`CsharpUnitBuilder`](src/Vee/CodeReader/Csharp/CsharpUnitBuilder.cs)) — a compilation over
 the unit's own syntax trees, never a reference to a built assembly. That matters more than it
 looks: framework references would come from whichever runtime the tool happened to run on, so a
 symbol reached through metadata would make the baseline a property of the machine that wrote it.
@@ -111,18 +111,18 @@ A test asserts that a unit's signature contains what the unit's own source decla
 else.
 
 **Swift** is parsed from source too, by
-[`SwiftSourceReader`](src/EasySemVer/CodeReader/Swift/SwiftSourceReader.cs). It reads declarations,
+[`SwiftSourceReader`](src/Vee/CodeReader/Swift/SwiftSourceReader.cs). It reads declarations,
 not the language: a file is blanked of comments and string literals so brackets can be matched
-([`SwiftSourceText`](src/EasySemVer/CodeReader/Swift/SwiftSourceText.cs)), split into declaration
-headers and bodies ([`SwiftSourceWalker`](src/EasySemVer/CodeReader/Swift/SwiftSourceWalker.cs)),
+([`SwiftSourceText`](src/Vee/CodeReader/Swift/SwiftSourceText.cs)), split into declaration
+headers and bodies ([`SwiftSourceWalker`](src/Vee/CodeReader/Swift/SwiftSourceWalker.cs)),
 and each header taken apart into the pieces the model needs
-([`SwiftDeclarationHeader`](src/EasySemVer/CodeReader/Swift/SwiftDeclarationHeader.cs)). Function
+([`SwiftDeclarationHeader`](src/Vee/CodeReader/Swift/SwiftDeclarationHeader.cs)). Function
 bodies are never entered — nothing declared in one is API.
 
 Which files belong to which target is read the same way: `Package.swift` as text
-([`SwiftPackageManifest`](src/EasySemVer/CodeReader/Swift/SwiftPackageManifest.cs)) and
+([`SwiftPackageManifest`](src/Vee/CodeReader/Swift/SwiftPackageManifest.cs)) and
 `project.pbxproj` as the OpenStep property list it is
-([`PbxprojParser`](src/EasySemVer/CodeReader/Swift/PbxprojParser.cs)).
+([`PbxprojParser`](src/Vee/CodeReader/Swift/PbxprojParser.cs)).
 
 This used to be the toolchain's symbol graph, and the argument for changing it is in
 [G-24](specs/99-known-gaps.md). The short version: the graph was more accurate and cost a full
@@ -132,7 +132,7 @@ private package dependency, and failed the run when any of that was missing.
 back: a process runner reaching the Swift reader again would leave every other test passing.
 
 The only thing left that shells out is **git**, for reading tags as a version seed, and it goes
-through [`IRunProcess`](src/EasySemVer/Interfaces/IRunProcess.cs) — the seam that lets the tests
+through [`IRunProcess`](src/Vee/Interfaces/IRunProcess.cs) — the seam that lets the tests
 stand in for it, and that keeps a missing git an ordinary input rather than a failure.
 
 ## Rules
@@ -157,8 +157,8 @@ public class EnumMemberAdded : IEvaluateCsharpSignatures
 ```
 
 It is registered in its language's `CompareSignatures` list —
-[C#](src/EasySemVer/Evaluators/Csharp/CompareSignatures.cs),
-[Swift](src/EasySemVer/Evaluators/Swift/CompareSwiftSignatures.cs) — and that is the whole of
+[C#](src/Vee/Evaluators/Csharp/CompareSignatures.cs),
+[Swift](src/Vee/Evaluators/Swift/CompareSwiftSignatures.cs) — and that is the whole of
 wiring it up. The run takes the highest impact anything reported, defaulting to Patch.
 
 Findings are keyed `(language, rule)`, so a rule name must be unique within its language but may
@@ -174,8 +174,8 @@ person's instinct will be to "fix" it.
 
 The predicate is the rule. The traversal — walking the paired types, finding the member with the
 same name on the other side — is not, and it belongs in a helper beside the rules that share it:
-[`SwiftMembers.GetPairedFunctions`](src/EasySemVer/Evaluators/Swift/SwiftMembers.cs),
-[`Properties.GetPaired`](src/EasySemVer/Evaluators/Csharp/Properties.cs),
+[`SwiftMembers.GetPairedFunctions`](src/Vee/Evaluators/Swift/SwiftMembers.cs),
+[`Properties.GetPaired`](src/Vee/Evaluators/Csharp/Properties.cs),
 `Overloads.GetMatchedOverloads`. Write those first, then the rules that consume them.
 
 ```csharp
@@ -205,7 +205,7 @@ exactly three things, none of which is that. The generic base class that was pro
 across languages is written up and withdrawn in [specs/13](specs/13-shared-rule-bases.md), with the
 numbers that killed it.
 
-So a new language inherits **a shape, not a library** (RUL-14). [`SwiftMembers`](src/EasySemVer/Evaluators/Swift/SwiftMembers.cs)
+So a new language inherits **a shape, not a library** (RUL-14). [`SwiftMembers`](src/Vee/Evaluators/Swift/SwiftMembers.cs)
 is the worked example to copy the structure of. There is nothing to subclass, and that is deliberate:
 those 34 rules pair over a topology only their own language has.
 
@@ -257,12 +257,12 @@ test failure.
 
 **Never run the tool against this repository without `--vnext-token-name`.** TOK-01 replaces
 `{{vnext}}` everywhere it appears under the folder root, and this is the repository that documents
-that token — a bare `easysemver .` here stamps the version over every mention of it in the README,
+that token — a bare `vee .` here stamps the version over every mention of it in the README,
 the specs and the source comments. The release workflow passes a name nobody writes for exactly
 this reason; a local run needs the same:
 
 ```bash
-easysemver . --dry-run --vnext-token-name easysemver-does-not-stamp-this
+vee . --dry-run --vnext-token-name vee-does-not-stamp-this
 ```
 
 ## Releasing
@@ -285,7 +285,7 @@ own fix.
   against a weaker suite than the one guarding `main`. Fork PRs are not built today: `ci.yml` has
   no `pull_request` trigger, and adding one is the change to make when this repository starts
   taking them.
-- **Do not touch versions by hand.** Not the `.csproj` properties, not `EasySemVer.xml`, not
+- **Do not touch versions by hand.** Not the `.csproj` properties, not `Vee.xml`, not
   `action.yml`'s `default: v…`, not the README's `uses:` refs. The release owns all of them, and a
   hand-edit is either overwritten or a merge conflict.
 - **Bring the spec with you.** New behaviour gets a requirement; changed behaviour edits the one it
@@ -322,7 +322,7 @@ Creating one would be deciding, on someone else's behalf, that a file is a versi
 to fire is a rule that will be wrong quietly, which is worse than absent.
 
 **The baseline is deterministic.** Two runs over unchanged source on two machines produce
-byte-identical `EasySemVer.xml`. Anything machine-dependent — absolute paths, timestamps, toolchain
+byte-identical `Vee.xml`. Anything machine-dependent — absolute paths, timestamps, toolchain
 versions, file-system enumeration order — is a defect, because it makes every checkout report a
 change that is not one. Sorting is the provider's job, at the point it writes.
 

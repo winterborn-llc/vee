@@ -13,7 +13,7 @@ internal class SwiftPackageFixture : IDisposable
 
     internal SwiftPackageFixture()
     {
-        this.FolderRoot = Directory.CreateTempSubdirectory("easysemver-swift").FullName;
+        this.FolderRoot = Directory.CreateTempSubdirectory("vee-swift").FullName;
         CopyDirectory(GetSourceDirectory(), this.PackageDirectory);
         File.Move(
             Path.Combine(this.PackageDirectory, "Package.swift.template"),

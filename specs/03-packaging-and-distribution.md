@@ -1,21 +1,21 @@
 # 03 — Packaging and Distribution
 
-Sources: [`EasySemVer.csproj`](../src/EasySemVer/EasySemVer.csproj),
+Sources: [`Vee.csproj`](../src/Vee/Vee.csproj),
 [`.github/workflows/dotnet.yml`](../.github/workflows/dotnet.yml).
 
-EasySemVer is distributed as **a command**, two ways. It is not a library, and nothing imports it
+Vee is distributed as **a command**, two ways. It is not a library, and nothing imports it
 into a consuming build — see [INV-01](02-invocation-and-distribution.md).
 
 ## Channels
 
 **PKG-01 — A `dotnet tool` package.** ✅
-The project SHALL pack as a .NET tool (`PackAsTool`) with command name **`easysemver`**, package
-id `Winterborn.Tools.EasySemVer`, multi-targeting `net8.0`/`net9.0`/`net10.0` so it runs on
+The project SHALL pack as a .NET tool (`PackAsTool`) with command name **`vee`**, package
+id `Winterborn.Tools.Vee`, multi-targeting `net8.0`/`net9.0`/`net10.0` so it runs on
 whatever SDK a consumer already has:
 
 ```bash
-dotnet tool install -g Winterborn.Tools.EasySemVer
-easysemver /path/to/folder
+dotnet tool install -g Winterborn.Tools.Vee
+vee /path/to/folder
 ```
 
 ℹ️ The package id still reads `…Library…`, which is now a misnomer — it is kept because renaming
@@ -32,7 +32,7 @@ obviously — and it is what the GitHub Action installs (ACT-02).
 cleared. Signing is not currently done.
 
 **PKG-03 — Self-versioned (dogfooding).** ✅
-`EasySemVer.csproj` SHALL carry all three version properties (`PackageVersion`,
+`Vee.csproj` SHALL carry all three version properties (`PackageVersion`,
 `AssemblyVersion`, `FileVersion`) so the tool versions itself using its own mechanism. The `Test`
 and `IntegrationTest` projects carry seed values for the same reason.
 
@@ -58,11 +58,11 @@ still dragging a whole `BuildHost-net472` tree — Newtonsoft.Json, System.Comma
 localized resources — into the package. Removing it took the tool package from 30 MB and 382
 files to **17 MB and 113**.
 ℹ️ Swift and Xcode support add no package references at all: they shell out through
-[`IRunProcess`](../src/EasySemVer/Interfaces/IRunProcess.cs) and parse with `System.Text.Json`.
+[`IRunProcess`](../src/Vee/Interfaces/IRunProcess.cs) and parse with `System.Text.Json`.
 
 **PKG-08 — Package metadata.** ✅
 The package SHALL carry `README.md` at its root, the logo at `Resources/logo.png`, the project and
-repository URL `https://github.com/winterborn-llc/easysemver`, and the MIT licence
+repository URL `https://github.com/winterborn-llc/vee`, and the MIT licence
 ([LICENSE](../LICENSE)).
 
 ## Continuous integration / publishing
@@ -91,7 +91,7 @@ together would otherwise seed from the same version, compute the same next one, 
 it; a half-finished release is worse than a queued one.
 
 **CI-02 — CI computes the version, using the previous release.** ✅ *(revised; was "CI SHALL NOT compute versions")*
-CI SHALL run EasySemVer itself rather than publishing whatever the committed `.csproj` files
+CI SHALL run Vee itself rather than publishing whatever the committed `.csproj` files
 happen to carry, and SHALL do so with the **previously published** tool, not the binary the run
 builds. Dogfooding with this run's own build would let a change that breaks versioning
 mis-version the very release that introduced it; using the published one means such a change
@@ -116,7 +116,7 @@ when one of the five publishes fails.
 
 **CI-05 — `v<major>` follows the newest release.** ✅ *(added 2026-08-09)*
 Once CI-04 has published a release, CI SHALL force-move the lightweight tag `v<major>` onto the
-commit that release was cut from, so that `uses: winterborn-llc/easysemver@v17` resolves to the
+commit that release was cut from, so that `uses: winterborn-llc/vee@v17` resolves to the
 current `17.x`. GitHub Actions resolves a `uses:` ref literally and performs no version matching of
 its own, so a moving tag is the only mechanism there is; it is the convention `actions/checkout@v5`
 and every other well-known action follows.
@@ -142,5 +142,5 @@ last release that completed — the correct outcome, reached by doing nothing.
 ℹ️ It is deliberately not folded into ACT-11's `tag: true`. That tag is half of CI-03's atomic
 push, where a force-moved ref has no business being, and it is pushed long before any binary exists.
 ℹ️ A bare `v17` is invisible to the seeding in
-[`GitTagVersionSource`](../src/EasySemVer/CodeReader/Swift/GitTagVersionSource.cs), which matches
+[`GitTagVersionSource`](../src/Vee/CodeReader/Swift/GitTagVersionSource.cs), which matches
 `v?MAJOR.MINOR.PATCH` only. Even if it were read it could not seed above the release it names.

@@ -1,5 +1,5 @@
-using Winterborn.Tools.EasySemVer.CodeReader.Swift;
-using Winterborn.Tools.EasySemVer.Interfaces.Swift;
+using Winterborn.Tools.Vee.CodeReader.Swift;
+using Winterborn.Tools.Vee.Interfaces.Swift;
 
 namespace Test.Swift;
 

@@ -30,7 +30,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EasySemVer\EasySemVer.csproj" />
+    <ProjectReference Include="..\Vee\Vee.csproj" />
   </ItemGroup>
   <ItemGroup>
     <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />

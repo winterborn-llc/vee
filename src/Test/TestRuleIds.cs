@@ -1,8 +1,8 @@
 using System.Text.RegularExpressions;
-using Winterborn.Tools.EasySemVer.Evaluators;
-using Winterborn.Tools.EasySemVer.Interfaces;
-using Winterborn.Tools.EasySemVer.Interfaces.Csharp;
-using Winterborn.Tools.EasySemVer.Interfaces.Swift;
+using Winterborn.Tools.Vee.Evaluators;
+using Winterborn.Tools.Vee.Interfaces;
+using Winterborn.Tools.Vee.Interfaces.Csharp;
+using Winterborn.Tools.Vee.Interfaces.Swift;
 
 namespace Test;
 
