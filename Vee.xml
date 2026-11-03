@@ -3973,6 +3973,7 @@
                </Methods>
                <Properties>
                   <Property name="ChangeType" type="string" readable="true" writable="true" initOnly="true" static="false" required="false" hasDefaultImplementation="false" />
+                  <Property name="DetectedChangeType" type="string" readable="true" writable="true" initOnly="true" static="false" required="false" hasDefaultImplementation="false" />
                   <Property name="Findings" type="IReadOnlyList&lt;Winterborn.Tools.Vee.Reporting.JsonReportFinding&gt;" readable="true" writable="true" initOnly="true" static="false" required="false" hasDefaultImplementation="false" />
                   <Property name="FormatVersion" type="int" readable="true" writable="true" initOnly="true" static="false" required="false" hasDefaultImplementation="false" />
                   <Property name="IsDryRun" type="bool" readable="true" writable="true" initOnly="true" static="false" required="false" hasDefaultImplementation="false" />
