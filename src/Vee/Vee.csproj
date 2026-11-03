@@ -2,9 +2,9 @@
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <PackageVersion>21.3.1</PackageVersion>
-    <AssemblyVersion>21.3.1</AssemblyVersion>
-    <FileVersion>21.3.1</FileVersion>
+    <PackageVersion>21.3.2</PackageVersion>
+    <AssemblyVersion>21.3.2</AssemblyVersion>
+    <FileVersion>21.3.2</FileVersion>
     <Title>Vee by Winterborn</Title>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RootNamespace>Winterborn.Tools.Vee</RootNamespace>
