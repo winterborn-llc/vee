@@ -216,12 +216,29 @@ runs:
         mkdir -p "$dir"
         asset="vee-$rid.$archive"
 
+        # The rename from EasySemVer happened mid-life, and this step reaches backwards: the
+        # release it downloads is one that already exists, so for every release cut before the
+        # rename the asset is still called `easysemver-`. That includes the release this
+        # repository bootstraps its own first post-rename run from, which is why the rename
+        # could not be a pure text swap. Try the current name, fall back to the old one.
+        # Removable once the oldest release anyone pins carries the new name.
+        legacyAsset="easysemver-$rid.$archive"
+
         echo "Downloading $asset from Vee $VEE_VERSION"
-        gh release download "$VEE_VERSION" \
+        if ! gh release download "$VEE_VERSION" \
           --repo winterborn-llc/vee \
           --pattern "$asset" \
           --dir "$dir" \
-          --clobber
+          --clobber 2>/dev/null
+        then
+          echo "No $asset in $VEE_VERSION; it predates the rename, so trying $legacyAsset"
+          asset="$legacyAsset"
+          gh release download "$VEE_VERSION" \
+            --repo winterborn-llc/vee \
+            --pattern "$asset" \
+            --dir "$dir" \
+            --clobber
+        fi
 
         if [ "$RUNNER_OS" = "Windows" ]; then
           powershell -NoProfile -NonInteractive -Command \
@@ -237,7 +254,13 @@ runs:
         # This name must track Vee.csproj's AssemblyName. ActionRegression asserts that
         # it does, because when the two drifted apart the failure landed here - in a download
         # that unpacked fine and then had nothing to run.
-        mv "$dir/Winterborn.Tools.Vee$exe" "$dir/vee$exe"
+        # A pre-rename archive carries the old assembly name alongside the old asset name;
+        # whichever of the two is in there becomes `vee`.
+        if [ -f "$dir/Winterborn.Tools.Vee$exe" ]; then
+          mv "$dir/Winterborn.Tools.Vee$exe" "$dir/vee$exe"
+        else
+          mv "$dir/Winterborn.Tools.EasySemVer$exe" "$dir/vee$exe"
+        fi
         chmod +x "$dir/vee$exe"
         echo "$dir" >> "$GITHUB_PATH"
 
